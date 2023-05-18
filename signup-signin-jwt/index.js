@@ -15,20 +15,20 @@ if (!fs.existsSync(userFile)) {
 }
 
 app.post('/register', async (req, res) => {
-    const users = JSON.parse(fs.readFileSync(userFile));
+    const users = JSON.parse(fs.readFile(userFile));
     const { name, email, password } = req.body;
     const userExist = users.find((user) => user.email === email);
     if (userExist) {
-        return res.json({ error: "user already exist.." });
+        return res.status(409).json({ message: "user already exist.." });
     }
     try {
         const hashPassword = await bycrypt.hash(password, 10);
         const user = { name, email, password: hashPassword }
         users.push(user);
         fs.writeFileSync(userFile, JSON.stringify(users, null, 2));
-        return res.json({ message: "User registered successfully" })
+        return res.status(200).json({ message: "User registered successfully" })
     } catch (err) {
-        return res.json({ err: "registration failed" });
+        return res.status(400).json({ error: "registration failed" });
     }
 })
 
@@ -38,24 +38,21 @@ app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const user = users.find((user) => user.email === email);
     if (!user) {
-        return res.json({ error: "Invalid email or password" })
+        return res.status(400).json({ message: "Invalid email" })
     }
     try {
         const passValid = await bycrypt.compare(password, user.password);
         if (!passValid) {
-            return res.json({ error: "Invalid email" })
+            return res.status(400).json({ error: "Invalid password" })
         }
         const token = jwt.sign({ email: user.email },
-            jwtSecretkey,
-            { expiresIn: '4h' });
-        return res.status(202).json({ token });
+            jwtSecretkey);
+        return res.status(202).json({ token });//acept for proessing but not completed
     }
     catch (error) {
         return res.json({ error: "Coudln't login " })
     }
 })
-
-
 
 
 //middleware for jwt verification
@@ -76,9 +73,8 @@ const verifyToken = (req, res, next) => {
 
 //
 app.get('/verification', verifyToken, (req, res) => {
-    const users = JSON.parse(fs.readFileSync(userFile));
     const user = req.user;
-    res.json({ message: `welcome,${user.email}, verification is successfull` })
+    res.json({ message: `welcome,${user.email}, verification is successfully done` })
 })
 
 
