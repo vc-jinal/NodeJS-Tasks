@@ -9,11 +9,6 @@ const userFile = process.env.MY_FILE;
 const jwtSecretkey = process.env.JWT_SECRET_KEY;
 app.use(bodyParser.json());
 
-
-if (!fs.existsSync(userFile)) {
-    fs.writeFile(userFile, []);
-}
-
 //register
 app.post('/register', async (req, res) => {
     try {
