@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 
 
 if (!fs.existsSync(userFile)) {
-    fs.writeFileSync(userFile, []);
+    fs.writeFile(userFile, []);
 }
 
 app.post('/register', async (req, res) => {
@@ -25,7 +25,7 @@ app.post('/register', async (req, res) => {
         const hashPassword = await bycrypt.hash(password, 10);
         const user = { name, email, password: hashPassword }
         users.push(user);
-        fs.writeFileSync(userFile, JSON.stringify(users, null, 2));
+        fs.writeFile(userFile, JSON.stringify(users, null, 2));
         return res.status(200).json({ message: "User registered successfully" })
     } catch (err) {
         return res.status(400).json({ error: "registration failed" });
@@ -34,7 +34,7 @@ app.post('/register', async (req, res) => {
 
 
 app.post('/login', async (req, res) => {
-    const users = JSON.parse(fs.readFileSync(userFile, 'utf-8'));
+    const users = JSON.parse(fs.readFile(userFile, 'utf-8'));
     const { email, password } = req.body;
     const user = users.find((user) => user.email === email);
     if (!user) {
@@ -47,10 +47,10 @@ app.post('/login', async (req, res) => {
         }
         const token = jwt.sign({ email: user.email },
             jwtSecretkey);
-        return res.status(202).json({ token });//acept for proessing but not completed
+        return res.status(200).json({ token });
     }
     catch (error) {
-        return res.json({ error: "Coudln't login " })
+        return res.json({ error: "Couldn't login " })
     }
 })
 
@@ -62,19 +62,17 @@ const verifyToken = (req, res, next) => {
     if (!token) {
         return res.json({ error: "Token is not given" })
     }
-    jwt.verify(token, jwtSecretkey, (err, decoded) => {
-        if (err) {
-            return res.json({ error: "Invalid token" })
-        }
+    jwt.verify(token, jwtSecretkey)
+    {
         req.user = decoded;
         next();
-    });
+    }
 }
 
-//
+//verification
 app.get('/verification', verifyToken, (req, res) => {
     const user = req.user;
-    res.json({ message: `welcome,${user.email}, verification is successfully done` })
+    res.json({ message: `welcome,${user.email}, verification is successfull` })
 })
 
 
