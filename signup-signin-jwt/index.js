@@ -3,7 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const bycrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
+const fs = require('fs/promises');
 require('dotenv').config();
 const userFile = process.env.MY_FILE;
 const jwtSecretkey = process.env.JWT_SECRET_KEY;
@@ -14,27 +14,33 @@ if (!fs.existsSync(userFile)) {
     fs.writeFile(userFile, []);
 }
 
+//register
 app.post('/register', async (req, res) => {
-    const users = JSON.parse(fs.readFile(userFile));
-    const { name, email, password } = req.body;
-    const userExist = users.find((user) => user.email === email);
-    if (userExist) {
-        return res.status(409).json({ message: "user already exist.." });
-    }
     try {
+        const data = await fs.readFile(userFile);
+        const users = JSON.parse(data.toString());
+
+        const { name, email, password } = req.body;
+        const userExist = users.find((user) => user.email === email);
+        if (userExist) {
+            return res.status(409).json({ message: "user already exist.." });
+        }
+
         const hashPassword = await bycrypt.hash(password, 10);
         const user = { name, email, password: hashPassword }
         users.push(user);
         fs.writeFile(userFile, JSON.stringify(users, null, 2));
         return res.status(200).json({ message: "User registered successfully" })
+
     } catch (err) {
-        return res.status(400).json({ error: "registration failed" });
+        return res.status(400).json({ message: "registration failed" });
     }
 })
 
-
+//login
 app.post('/login', async (req, res) => {
-    const users = JSON.parse(fs.readFile(userFile, 'utf-8'));
+    const data = await fs.readFile(userFile);
+    const users = JSON.parse(data.toString());
     const { email, password } = req.body;
     const user = users.find((user) => user.email === email);
     if (!user) {
@@ -43,11 +49,10 @@ app.post('/login', async (req, res) => {
     try {
         const passValid = await bycrypt.compare(password, user.password);
         if (!passValid) {
-            return res.status(400).json({ error: "Invalid password" })
+            return res.status(400).json({ message: "Invalid password" })
         }
-        const token = jwt.sign({ email: user.email },
-            jwtSecretkey);
-        return res.status(200).json({ token });
+        const token = jwt.sign({ email: user.email }, jwtSecretkey);
+        return res.status(200).json({ message: "user logged in comploeted", token: token });
     }
     catch (error) {
         return res.json({ error: "Couldn't login " })
@@ -56,17 +61,17 @@ app.post('/login', async (req, res) => {
 
 
 //middleware for jwt verification
-
 const verifyToken = (req, res, next) => {
     const token = req.headers.authorization;
     if (!token) {
-        return res.json({ error: "Token is not given" })
+        return res.json({ error: "Token required" })
     }
-    jwt.verify(token, jwtSecretkey)
-    {
+    const decoded = jwt.verify(token, jwtSecretkey)
+    if (decoded) {
         req.user = decoded;
         next();
     }
+    return res.json({ error: "Invalid token" });
 }
 
 //verification
