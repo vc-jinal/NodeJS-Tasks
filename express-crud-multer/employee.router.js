@@ -24,10 +24,9 @@ employeeRouter.get('/:emp_id', (req, res) => {
 
 //create emplyee details
 employeeRouter.post('/', fileUpload.singleUpload, async (req, res) => {
-    console.log('bcejebcjbhbhcbdhcbh------');
     const { emp_id, emp_name, emp_email, emp_department, emp_joining_date } = req.body;
     const emp_profile = req.file.originalname;
-    console.log(emp_profile);
+
     const data = JSON.parse(fs.readFileSync(empFile));
     const newEmpDetails = {
         emp_id,
@@ -37,7 +36,7 @@ employeeRouter.post('/', fileUpload.singleUpload, async (req, res) => {
         emp_department,
         emp_joining_date
     }
-    console.log(newEmpDetails);
+
     data.push(newEmpDetails);
     fs.writeFileSync(empFile, JSON.stringify(data, null, 2));
     res.json({ message: "New Employee added Successfully...!!", data: newEmpDetails });
@@ -47,8 +46,8 @@ employeeRouter.post('/', fileUpload.singleUpload, async (req, res) => {
 employeeRouter.put('/:emp_id', fileUpload.singleUpload, (req, res) => {
     const empId = req.params.emp_id;
     const { emp_name, emp_email, emp_department, emp_joining_date } = req.body;
-    const updateEmp = { emp_name, emp_email, emp_department, emp_joining_date };
     const emp_profile = req.file.originalname;
+
     const data = JSON.parse(fs.readFileSync(empFile));
     const findEmployeeIndex = data.findIndex((emp) => emp.emp_id === empId);
     if (findEmployeeIndex === -1) {
