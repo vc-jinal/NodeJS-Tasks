@@ -18,17 +18,17 @@ app.post('/register', async (req, res) => {
         const { name, email, password } = req.body;
         const userExist = users.find((user) => user.email === email);
         if (userExist) {
-            return res.status(409).json({ message: "user already exist.." });
+            return res.status(400).send({ message: "user already exist." });
         }
 
         const hashPassword = await bycrypt.hash(password, 10);
         const user = { name, email, password: hashPassword }
         users.push(user);
         fs.writeFile(userFile, JSON.stringify(users, null, 2));
-        return res.status(200).json({ message: "User registered successfully" })
+        return res.status(200).send({ message: "User registered successfully" })
 
     } catch (err) {
-        return res.status(400).json({ message: "registration failed" });
+        return res.status(400).send({ message: "registration failed" });
     }
 })
 
@@ -39,18 +39,18 @@ app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const user = users.find((user) => user.email === email);
     if (!user) {
-        return res.status(400).json({ message: "Invalid email" })
+        return res.status(400).send({ message: "Invalid email" })
     }
     try {
         const passValid = await bycrypt.compare(password, user.password);
         if (!passValid) {
-            return res.status(400).json({ message: "Invalid password" })
+            return res.status(400).send({ message: "Invalid password" })
         }
         const token = jwt.sign({ email: user.email }, jwtSecretkey);
-        return res.status(200).json({ message: "user logged in comploeted", token: token });
+        return res.status(200).send({ message: "user logged in completed", token: token });
     }
     catch (error) {
-        return res.json({ error: "Couldn't login " })
+        return res.status(400).send({ message: "Couldn't login " })
     }
 })
 
@@ -59,14 +59,14 @@ app.post('/login', async (req, res) => {
 const verifyToken = (req, res, next) => {
     const token = req.headers.authorization;
     if (!token) {
-        return res.json({ error: "Token required" })
+        return res.json({ message: "Token required" })
     }
     const decoded = jwt.verify(token, jwtSecretkey)
     if (decoded) {
         req.user = decoded;
         next();
     }
-    return res.json({ error: "Invalid token" });
+    return res.json({ message: "Invalid token" });
 }
 
 //verification
@@ -74,7 +74,6 @@ app.get('/verification', verifyToken, (req, res) => {
     const user = req.user;
     res.json({ message: `welcome,${user.email}, verification is successfull` })
 })
-
 
 app.listen(3000, () => {
     console.log("app is runnig on port 3000");
