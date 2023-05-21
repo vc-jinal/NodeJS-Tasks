@@ -39,18 +39,18 @@ app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const user = users.find((user) => user.email === email);
     if (!user) {
-        return res.status(400).send({ message: "Invalid email" })
+        return res.send({ statuscode: 400, message: "Invalid email" })
     }
     try {
         const passValid = await bycrypt.compare(password, user.password);
         if (!passValid) {
-            return res.status(400).send({ message: "Invalid password" })
+            return res.send({ statuscode: 400, message: "Invalid password" })
         }
         const token = jwt.sign({ email: user.email }, jwtSecretkey);
-        return res.status(200).send({ message: "user logged in completed", token: token });
+        return res.send({ statuscode: 200, message: "user logged in completed", token: token });
     }
     catch (error) {
-        return res.status(400).send({ message: "Couldn't login " })
+        return res.send({ statuscode: 400, message: "Couldn't login " })
     }
 })
 
@@ -59,20 +59,20 @@ app.post('/login', async (req, res) => {
 const verifyToken = (req, res, next) => {
     const token = req.headers.authorization;
     if (!token) {
-        return res.json({ message: "Token required" })
+        return res.send({ statuscode: 400, message: "Token is required" })
     }
     const decoded = jwt.verify(token, jwtSecretkey)
     if (decoded) {
         req.user = decoded;
         next();
     }
-    return res.json({ message: "Invalid token" });
+    return res.send({ statuscode: 400, message: "Invalid token" });
 }
 
 //verification
 app.get('/verification', verifyToken, (req, res) => {
     const user = req.user;
-    res.json({ message: `welcome,${user.email}, verification is successfull` })
+    res.send({ statuscode: 200, message: `welcome,${user.email}, verification is successfull` })
 })
 
 app.listen(3000, () => {
