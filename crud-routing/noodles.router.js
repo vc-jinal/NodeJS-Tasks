@@ -1,74 +1,95 @@
 const noodlesRouter = require('express').Router();
-const bodyParser = require('body-parser');
-const fs = require('fs');
+const fs = require('fs/promises');
 require('dotenv').config();
 const menuFile = process.env.MENU_FILE;
 
-noodlesRouter.use(bodyParser.json());
-
 //get all noodles details
-noodlesRouter.get("/", (req, res) => {
-    const data = JSON.parse(fs.readFileSync(menuFile, 'utf-8'));
-    res.json(data.noodles);
+noodlesRouter.get("/", async (req, res) => {
+    try {
+        const data = await fs.readFile(menuFile);
+        const item = JSON.parse(data);
+        res.send(item.noodles);
+    }
+    catch (error) {
+        res.send({ statuscode: 500, error: 'internal server error' })
+    }
 })
 
 //get noodles details by id
-noodlesRouter.get("/:id", (req, res) => {
-    const data = JSON.parse(fs.readFileSync(menuFile, 'utf8'));
-    const noodlesId = parseInt(req.params.id);
-    const noodles = data.noodles.find((item) => item.id === noodlesId)
-    if (noodles) {
-        res.json(noodles);
+noodlesRouter.get("/:id", async (req, res) => {
+    try {
+        const data = await fs.readFile(menuFile);
+        const item = JSON.parse(data);
+        const noodlesId = parseInt(req.params.id);
+        const noodles = item.noodles.find((item) => item.id === noodlesId)
+        if (noodles) {
+            res.json(noodles);
+        }
+        else {
+            res.send({ statuscode: 404, error: 'Noodles not found' });
+        }
     }
-    else {
-        res.status(404).json({ error: 'Noodles not found' });
-
+    catch (error) {
+        res.send({ statuscode: 500, error: 'internal server error' })
     }
 })
 
 //post (create) noodles details
-noodlesRouter.post('/', (req, res) => {
-    const data = JSON.parse(fs.readFileSync(menuFile));
-    const { id, name, price } = req.body;
-    let newNoodles;
-    if (id) {
-        newNoodles = { id, name, price };
+noodlesRouter.post('/', async (req, res) => {
+    try {
+        const data = await fs.readFile(menuFile);
+        const item = JSON.parse(data);
+        const { id, name, price } = req.body;
+        const newNoodlesId = item.counter.noodles + 1;
+        const newNoodles = { id: newNoodlesId, name, price }
+        item.noodles.push(newNoodles);
+        item.counter.noodles = newNoodlesId;
+        await fs.writeFile(menuFile, JSON.stringify(item));
+        res.send(newNoodles);
     }
-    else {
-        const newNoodlesId = data.counter[0].burger++;
-        newNoodles = { id: newNoodlesId, name, price }
+    catch (error) {
+        res.send({ statuscode: 500, error: 'internal server error' })
     }
-    data.noodles.push(newNoodles);
-    fs.writeFileSync(menuFile, JSON.stringify(data));
-    res.json(newNoodles);
 })
 
 //update noodle by id
-noodlesRouter.put('/:id', (req, res) => {
-    const data = JSON.parse(fs.readFileSync(menuFile));
-    const id = parseInt(req.params.id);
-    const { name, price } = req.body;
-    const noodlesIndex = data.noodles.findIndex((item) => item.id === id);
-    if (noodlesIndex !== -1) {
-        data.noodles[noodlesIndex] = { id: parseInt(id), name, price }
-        fs.writeFileSync(menuFile, JSON.stringify(data));
-        res.json(data.noodles[noodlesIndex]);
+noodlesRouter.put('/:id', async (req, res) => {
+    try {
+        const data = await fs.readFile(menuFile);
+        const item = JSON.parse(data);
+        const id = parseInt(req.params.id);
+        const { name, price } = req.body;
+        const noodlesIndex = item.noodles.findIndex((item) => item.id === id);
+        if (noodlesIndex !== -1) {
+            item.noodles[noodlesIndex] = { id, name, price }
+            await fs.writeFile(menuFile, JSON.stringify(item));
+            res.send(item.noodles[noodlesIndex]);
+        }
+        else {
+            res.send({ statuscode: 404, error: 'noodlees not found' })
+        }
     }
-    else {
-        res.status(404).json({ error: 'noodlees not found' })
+    catch (error) {
+        res.send({ statuscode: 500, error: 'Internal Server Error' });
     }
 })
 //delete noodles by id
-noodlesRouter.delete("/:id", (req, res) => {
-    const noodlesId = parseInt(req.params.id);
-    const data = JSON.parse(fs.readFileSync(menuFile, 'utf8'));
-    const noodlesIndex = data.pizza.findIndex((item) => item.id === noodlesId);
-    if (index !== -1) {
-        data.noodles.splice(noodlesIndex, 1)
-        fs.writeFileSync(menuFile, JSON.stringify(data));
-        res.json({ message: "Noodles is deleted" });
-    } else {
-        res.status(404).json({ error: 'Pizza not found' });
+noodlesRouter.delete("/:id", async (req, res) => {
+    try {
+        const noodlesId = parseInt(req.params.id);
+        const data = await fs.readFile(menuFile);
+        const item = JSON.parse(data);
+        const noodlesIndex = item.pizza.findIndex((item) => item.id === noodlesId);
+        if (index !== -1) {
+            item.noodles.splice(noodlesIndex, 1)
+            await fs.writeFile(menuFile, JSON.stringify(item));
+            res.send({ statuscode: 200, message: "Noodles is deleted" });
+        } else {
+            res.send({ statuscode: 404, error: 'noodles not found' });
+        }
+    }
+    catch (error) {
+        res.send({ statuscode: 500, error: 'Internal Server Error' });
     }
 })
 
