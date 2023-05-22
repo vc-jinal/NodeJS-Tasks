@@ -1,1 +1,63 @@
-{"pizza":[{"id":3,"name":"sssssssssssssssssssssssssss","price":190},{"id":4,"name":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","price":190},{"id":5,"name":"oooooooooooooooooo","price":190},{"id":6,"name":"Maharaja pizza","price":190}],"burger":[{"id":6,"name":"chinese burger","price":190},{"id":7,"name":"burgir","price":250}],"noodles":[{"id":1,"name":"chinese noodles","price":190},{"id":2,"name":"n2","price":150},{"id":3,"name":"Hakka noodles","price":250},{"id":4,"name":"n999","price":250}],"counter":{"pizza":7,"burger":7,"noodles":1}}
+{
+    "pizza": [
+        {
+            "id": 3,
+            "name": "sssssssssssssssssssssssssss",
+            "price": 190
+        },
+        {
+            "id": 4,
+            "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "price": 190
+        },
+        {
+            "id": 5,
+            "name": "oooooooooooooooooo",
+            "price": 190
+        },
+        {
+            "id": 6,
+            "name": "Maharaja pizza",
+            "price": 190
+        }
+    ],
+    "burger": [
+        {
+            "id": 6,
+            "name": "chinese burger",
+            "price": 190
+        },
+        {
+            "id": 7,
+            "name": "burgir",
+            "price": 250
+        }
+    ],
+    "noodles": [
+        {
+            "id": 1,
+            "name": "chinese noodles",
+            "price": 190
+        },
+        {
+            "id": 2,
+            "name": "n2",
+            "price": 150
+        },
+        {
+            "id": 3,
+            "name": "Hakka noodles",
+            "price": 250
+        },
+        {
+            "id": 4,
+            "name": "n999",
+            "price": 250
+        }
+    ],
+    "counter": {
+        "pizza": 7,
+        "burger": 7,
+        "noodles": 1
+    }
+}
