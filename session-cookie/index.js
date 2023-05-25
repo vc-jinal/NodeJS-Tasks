@@ -76,7 +76,7 @@ app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const user = data.find((user) => user.email === email)
     if (!user) {
-        return res.send({ statuscode: 400, message: "Email not matched" });
+        return res.send({ statuscode: 400, message: "Email not Found" });
     }
     const passValid = await bcrypt.compare(password, user.password);
     if (!passValid) {
@@ -104,6 +104,3 @@ app.get('/dashboard', (req, res) => {
 app.listen(3000, () => {
     console.log("app is running on 3000");
 })
-
-
-
