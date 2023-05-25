@@ -1,10 +1,10 @@
 const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-const bycrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const fs = require('fs/promises');
 require('dotenv').config();
-const Secretkey = process.env.SECRET_KEY;
+const secretKey = process.env.SECRET_KEY;
 const fileStore = require('session-file-store')(session);
 const app = express();
 
@@ -14,7 +14,7 @@ app.use(cookieParser());
 
 app.use(
     session({
-        secret: Secretkey,
+        secret: secretKey,
         saveUninitialized: false,
         cookie: {
             maxAge: 1000 * 60 * 60
@@ -25,14 +25,18 @@ app.use(
         }),
     })
 )
-
+const file = './session.json';
 const readSessionData = async () => {
-    const data = await fs.readFile('./session.json');
-    return JSON.parse(data);
+    try {
+        const data = await fs.readFile(file);
+        return JSON.parse(data);
+    } catch (err) {
+        return [];
+    }
 };
 
 const writeSessionData = async (sessionData) => {
-    await fs.writeFile('./session.json', JSON.stringify(sessionData, null, 2));
+    await fs.writeFile(file, JSON.stringify(sessionData, null, 2));
 };
 
 //signup if user logged in then redirect to dashboard
@@ -51,9 +55,9 @@ app.post('/signup', async (req, res) => {
     const { name, email, password, phone } = req.body;
     const userExist = sessionData.find((user) => user.email === email)
     if (userExist) {
-        return res.send("user already exist")
+        return res.send({ statuscode: 409, message: "user already exist" })
     }
-    const hashPassword = await bycrypt.hash(password, 10);
+    const hashPassword = await bcrypt.hash(password, 10);
     const newUser = {
         id: sessionData.length + 1,
         name,
@@ -72,11 +76,11 @@ app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const user = data.find((user) => user.email === email)
     if (!user) {
-        return res.send("Invalid Email");
+        return res.send({ statuscode: 400, message: "Email not matched" });
     }
-    const passValid = await bycrypt.compare(password, user.password);
+    const passValid = await bcrypt.compare(password, user.password);
     if (!passValid) {
-        return res.send("Invalid Password");
+        return res.send({ statuscode: 400, message: "Password not matched" });
     }
     if (user) {
         req.session.user = user;
@@ -93,7 +97,7 @@ app.get('/dashboard', (req, res) => {
         email: user.email,
         phone: user.phone
     }
-    res.json({ userDetail });
+    res.json({ message: "user details fetched successfully", userDetail: userDetail });
 
 })
 
