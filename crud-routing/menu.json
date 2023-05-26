@@ -7,51 +7,46 @@
         },
         {
             "id": 4,
-            "name": "margerita",
+            "name": "margherita",
             "price": 190
         },
         {
             "id": 5,
-            "name": "italian",
+            "name": "Italian Pizza",
             "price": 190
         },
         {
             "id": 6,
-            "name": "Maharaja pizza",
+            "name": "Corn pizza",
             "price": 190
         }
     ],
     "burger": [
         {
             "id": 6,
-            "name": "chinese burger",
+            "name": "veg burger",
             "price": 190
         },
         {
             "id": 7,
-            "name": "burgir",
+            "name": "Aaloo-Tikki burger",
             "price": 250
         }
     ],
     "noodles": [
         {
             "id": 1,
-            "name": "chinese noodles",
+            "name": "Veg Noodles",
             "price": 190
         },
         {
             "id": 2,
-            "name": "n2",
+            "name": "Manchurian Noodles",
             "price": 150
         },
         {
             "id": 3,
             "name": "Hakka noodles",
-            "price": 250
-        },
-        {
-            "id": 4,
-            "name": "n999",
             "price": 250
         }
     ],
