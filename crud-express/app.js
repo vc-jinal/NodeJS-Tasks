@@ -1,84 +1,105 @@
 const express = require('express')
 const app = express();
-const fs = require('fs');
-const bodyParser = require('body-parser');
-
+const fs = require('fs/promises');
 const file = './db.json';
-app.use(bodyParser.json());
+app.use(express.json());
 
-if (!fs.existsSync(file)) {
-    fs.writeFileSync(file, '[]');
+const readFile = async () => {
+    try {
+        const fileData = await fs.readFile(file);
+        return JSON.parse(fileData);
+    } catch (err) {
+        return [];
+    }
 }
 
-const readFile = () => {
-    const fileData = fs.readFileSync(file);
-    return JSON.parse(fileData);
-}
-
-const writeFile = (data) => {
-    fs.writeFileSync(file, JSON.stringify(data, null, 2));
+const writeFile = async (data) => {
+    await fs.writeFile(file, JSON.stringify(data, null, 2));
 }
 
 //GET
-app.get('/', (req, res) => {
-    const user = readFile();
-    res.json(user);
+app.get('/', async (req, res) => {
+    try {
+        const user = await readFile();
+        res.send({ users: user });
+    }
+    catch (err) {
+        res.send({ statuscode: 500, error: 'internal server error' })
+    }
 })
 
-//GET 
-app.get('/email/:emailid', (req, res) => {
-    const users = readFile();
-    const emailid = req.params.emailid;
-    const user = users.find((u) => u.emailid === emailid);
-    if (user) {
-        res.json(user);
-    }
-    else {
-        res.status(404).json({ error: 'User is not found' });
+//GET user by emailId
+app.get('/email/:emailId', async (req, res) => {
+    try {
+        const users = await readFile();
+        const emailId = req.params.emailId;
+        const user = users.find((u) => u.emailId === emailId);
+        if (user) {
+            res.send({ userDetails: user });
+        }
+        else {
+            res.send({ statuscode: 404, message: 'User not found' });
+        }
+    } catch (err) {
+        res.send({ statuscode: 500, message: 'internal server error' })
     }
 });
 
+//create
+app.post('/', async (req, res) => {
+    try {
+        const users = await readFile();
+        const newUser = req.body;
+        const existEmail = users.find((u) => u.emailId === newUser.emailId);
+        if (existEmail) {
+            return res.send({ statuscode: 403, message: 'EmailId already exist' });
+        }
+        users.push(newUser);
+        writeFile(users);
+        res.send({ NewUser: newUser });
+    } catch (error) {
+        res.send({ statuscode: 500, message: 'internal server error' })
+    }
 
-//cretae
-app.post('/', (req, res) => {
-    const users = readFile();
-    const newUser = req.body;
-    const existEmail = users.find((u) => u.emailid === newUser.emailid);
-    if (existEmail) {
-        return res.status(404).json({ error: 'Email id is already exist' });
-    }
-    users.push(newUser);
-    writeFile(users);
-    res.json(newUser);
 })
+
 //update
-app.put('/email/:emailid', (req, res) => {
-    const users = readFile();
-    const emailid = req.params.emailid;
-    const updatedUser = req.body;
-    const userIndex = users.findIndex((u) => u.emailid === emailid);
-    if (userIndex === -1) {
-        return res.status(404).json({ error: 'User not found' });
+app.put('/email/:emailId', async (req, res) => {
+    try {
+        const users = await readFile();
+        const emailId = req.params.emailId;
+        const updatedUser = req.body;
+        const userIndex = users.findIndex((u) => u.emailId === emailId);
+        if (userIndex === -1) {
+            return res.send({ statuscode: 404, message: 'User not found' });
+        }
+        users[userIndex] = { ...users[userIndex], ...updatedUser };
+        await writeFile(users);
+        res.send({ updatedUser: users[userIndex] });
+    } catch (error) {
+        res.send({ statuscode: 500, error: 'Internal server error' })
     }
-    users[userIndex] = { ...users[userIndex], ...updatedUser };
-    writeFile(users);
-    res.json(users[userIndex]);
+
 })
 
 //delete
-app.delete('/email/:emailid', (req, res) => {
-    const users = readFile();
-    const emailid = req.params.emailid;
-    const userIndex = users.findIndex((u) => u.emailid === emailid)
-    if (userIndex === -1) {
-        return res.status(404).json({ error: 'user not found' });
-
+app.delete('/email/:emailId', async (req, res) => {
+    try {
+        const users = await readFile();
+        const emailId = req.params.emailId;
+        const userIndex = users.findIndex((u) => u.emailId === emailId)
+        if (userIndex === -1) {
+            return res.send({ statuscode: 404, message: 'user not found' });
+        }
+        const deleteUser = users.splice(userIndex, 1);
+        await writeFile(users);
+        res.send({ deletedUser: deleteUser[0] });
     }
-    const deleteUser = users.splice(userIndex, 1);
-    writeFile(users);
-    res.json(deleteUser[0]);
+    catch (error) {
+        res.send({ statuscode: 500, error: 'Internal server error' })
+    }
 })
 
 app.listen(3000, () => {
-    console.log('The server is runnig on 3000 port');
+    console.log('The server is running on 3000 port');
 })
