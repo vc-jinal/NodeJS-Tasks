@@ -104,6 +104,7 @@ app.get('/dashboard', (req, res) => {
 //logout
 app.get('/logout', (req, res) => {
     req.session.destroy();
+    res.clearCookie('connect.sid');
     res.sendFile(__dirname + '/login.html')
 })
 
