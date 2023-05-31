@@ -11,6 +11,7 @@ app.post('/', (req, res) => {
     }
 
     const duplicates = {};
+    let newData = {};
     for (const item of dataArray) {
         const {
             sheetName,
@@ -21,24 +22,25 @@ app.post('/', (req, res) => {
             res.send({ statuscode: 400, message: "SheetName is compulsory" })
         }
 
-        if (!data[sheetName]) {
-            data[sheetName] = [];
+        if (!newData[sheetName]) {
+            newData[sheetName] = [];
         }
 
-        const duplicateItems = data[sheetName].filter(existingRecord => {
+        const duplicateItems = newData[sheetName].filter(existingRecord => {
             return unique.some(key => existingRecord[key] === record[key]);
         });
 
         if (duplicateItems.length > 0) {
             duplicates[sheetName] = duplicates[sheetName] ? duplicates[sheetName].concat(item) : [...duplicateItems, item];
         }
-        data[sheetName].push(record);
+        newData[sheetName].push(record);
     }
 
     if (Object.keys(duplicates).length > 0) {
-        return res.send({ statuscode: 400, message: "Duplicate values found in unique keys.", DuplicateValue: duplicates });
+        return res.send({ statuscode: 400, message: "Duplicate values found", DuplicateValue: duplicates });
     }
-    return res.send({ statuscode: 200, message: "Data uniqueness check successful.", data });
+    data = newData;
+    return res.send({ statuscode: 200, message: "Unique Data Found", data });
 });
 
 app.listen(3000, () => {
