@@ -7,7 +7,7 @@ app.post('/', (req, res) => {
     const { data: dataArray, unique } = req.body;
 
     if (!dataArray || !Array.isArray(dataArray) || dataArray.length === 0 || !unique || !Array.isArray(unique) || unique.length === 0) {
-        return res.send({ statuscode: 400, message: 'Invalid request. Data array and unique keys are required.' });
+        return res.send({ statusCode: 400, message: 'Invalid request. Data array and unique keys are required.' });
     }
 
     const duplicates = {};
@@ -19,7 +19,7 @@ app.post('/', (req, res) => {
         } = item;
         // Check if the sheetName is there or not
         if (!sheetName) {
-            res.send({ statuscode: 400, message: "SheetName is compulsory" })
+            res.send({ statusCode: 400, message: "SheetName is compulsory" })
         }
 
         if (!newData[sheetName]) {
@@ -37,10 +37,10 @@ app.post('/', (req, res) => {
     }
 
     if (Object.keys(duplicates).length > 0) {
-        return res.send({ statuscode: 400, message: "Duplicate values found", DuplicateValue: duplicates });
+        return res.send({ statusCode: 400, message: "Duplicate values found", DuplicateValue: duplicates });
     }
     data = newData;
-    return res.send({ statuscode: 200, message: "Unique Data Found", data });
+    return res.send({ statusCode: 200, message: "Unique Data Found", data });
 });
 
 app.listen(3000, () => {
