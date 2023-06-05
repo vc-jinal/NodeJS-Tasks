@@ -16,8 +16,29 @@ route.get("/roles/permissions/:roleId", async (req, res) => {
     }
 });
 
+//get permission for user
+route.get('/permission/user/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const userPermission = await query(`SELECT p.name
+        FROM permission p 
+        INNER JOIN role_permission rp
+        ON rp.permission_id=p.id
+        INNER JOIN user u
+        ON u.id=rp.role_id
+        WHERE u.id=${userId}
+        `)
+        if (userPermission.affectedRows === 0) {
+            return res.send({ statusCode: 404, message: "Data not found" });
+        }
+        return res.send({ statusCode: 200, message: "Get permission of user", data: userPermission })
+    } catch (error) {
+        return res.send({ statusCode: 500, message: "Internal Server Error" })
+    }
+})
+
 //add permission to role
-route.post('/add/permission/:roleId/:permissionId', async (req, res) => {
+route.post('/permission/:roleId/:permissionId', async (req, res) => {
     try {
         const roleId = req.params.roleId;
         const permissionId = req.params.permissionId;
@@ -33,7 +54,7 @@ route.post('/add/permission/:roleId/:permissionId', async (req, res) => {
 })
 
 //delete permission of role
-route.delete('/delete/permission/:roleId/:permissionId', async (req, res) => {
+route.delete('/permission/:roleId/:permissionId', async (req, res) => {
     try {
         const roleId = req.params.roleId;
         const permissionId = req.params.permissionId;
@@ -64,10 +85,10 @@ route.delete('/permission/:permissionId', async (req, res) => {
 })
 
 //update permission name 
-route.put('/update/permission/:permissionId', async (req, res) => {
+route.put('/permission/:permissionId/:permissionName', async (req, res) => {
     try {
         const permissionId = req.params.permissionId;
-        const permissionName = req.body;
+        const permissionName = req.params.permissionName;
         const updatedPermissionName = await query(`UPDATE permission SET name='${permissionName}' where id=${permissionId}`)
         if (updatedPermissionName.affectedRows === 0) {
             return res.send({ statusCode: 404, message: "Data not found" });
