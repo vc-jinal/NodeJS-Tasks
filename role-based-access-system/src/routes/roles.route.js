@@ -6,7 +6,6 @@ import query from "../db/query.js";
 route.get("/:roleId/permission", async (req, res) => {
     try {
         const roleId = req.params.roleId;
-        console.log(roleId);
         const permission = await query(`SELECT p.name FROM permission p INNER JOIN role_permission rp ON rp.permission_id = p.id WHERE rp.role_id =${roleId}`);
         if (permission.affectedRows === 0) {
             return res.send({ statusCode: 404, message: "Data not found" });
@@ -20,9 +19,7 @@ route.get("/:roleId/permission", async (req, res) => {
 //add permission to role
 route.post('/', async (req, res) => {
     try {
-        // const roleId = req.params.roleId;
         const { role_id, permission_id } = req.body;
-        // const permissionId = req.params.permissionId;
         const permission = await query(`INSERT INTO role_permission(role_id,permission_id) VALUES(${role_id},${permission_id}) `)
         if (permission.affectedRows === 0) {
             return res.send({ statusCode: 404, message: "Data not found" });
