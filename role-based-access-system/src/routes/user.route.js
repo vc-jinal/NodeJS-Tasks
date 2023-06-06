@@ -29,9 +29,11 @@ route.get('/:userId/permission', async (req, res) => {
         FROM permission p 
         INNER JOIN role_permission rp
         ON rp.permission_id=p.id
+        INNER JOIN roles r
+        ON rp.role_id=r.id
         INNER JOIN user u
-        ON u.id=rp.role_id
-        WHERE u.id=${userId}
+        ON u.id=r.user_id
+        WHERE u.id=${userId};
         `)
         if (userPermission.affectedRows === 0) {
             return res.send({ statusCode: 404, message: "Data not found" });

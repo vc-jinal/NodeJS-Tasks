@@ -6,8 +6,8 @@ import rolesRoutes from "./routes/roles.route.js";
 const app = express();
 app.use(express.json());
 
-app.use("/api/permission", permissionRoutes);
+app.use("/api/permissions", permissionRoutes);
 app.use("/api/roles", rolesRoutes);
-app.use("api/user", userRoutes)
+app.use("/api/users", userRoutes)
 
 app.listen(3000, () => console.log("Server is running on ", 3000));
