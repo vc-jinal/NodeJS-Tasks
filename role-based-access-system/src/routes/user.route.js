@@ -11,9 +11,6 @@ route.get('/:userId/role', async (req, res) => {
         INNER JOIN user u 
         ON u.id=r.user_id
         WHERE u.id=${userId}`)
-        if (getUserRole.affectedRows === 0) {
-            return res.send({ statusCode: 404, message: "Data not found" });
-        }
         return res.send({ statusCode: 200, message: "Get Role of User", data: getUserRole })
     }
     catch (error) {
@@ -25,7 +22,7 @@ route.get('/:userId/role', async (req, res) => {
 route.get('/:userId/permission', async (req, res) => {
     try {
         const userId = req.params.userId;
-        const userPermission = await query(`SELECT p.name
+        const userPermission = await query(`SELECT DISTINCT p.name
         FROM permission p 
         INNER JOIN role_permission rp
         ON rp.permission_id=p.id
