@@ -14,21 +14,20 @@ app.post('/register', async (req, res) => {
     try {
         const data = await fs.readFile(userFile);
         const users = JSON.parse(data.toString());
-
+        console.log(users);
         const { name, email, password } = req.body;
+        console.log(req.body);
         const userExist = users.find((user) => user.email === email);
         if (userExist) {
             return res.status(400).send({ message: "user already exist." });
         }
-
         const hashPassword = await bycrypt.hash(password, 10);
         const user = { name, email, password: hashPassword }
         users.push(user);
         fs.writeFile(userFile, JSON.stringify(users, null, 2));
         return res.status(200).send({ message: "User registered successfully" })
-
     } catch (err) {
-        return res.status(400).send({ message: "registration failed" });
+        return res.status(400).send({ message: "registration failed", err });
     }
 })
 
