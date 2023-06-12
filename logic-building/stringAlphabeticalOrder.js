@@ -1,7 +1,6 @@
 //Write a function that takes a string as input and returns the characters in the string in alphabetical order.
 function alphabeticalOrder(str) {
 	const string = str.split("");
-	// console.log(string);
 	console.log("given string: ", str);
 	for (let i = 0; i < string.length; i++) {
 		let temp = 0;

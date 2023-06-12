@@ -1,5 +1,4 @@
-//Given an array of strings, write a function to sort the strings based on their length, 
-// from shortest to longest.
+// Write a function that takes an array of numbers and returns the second smallest number in the array.
 function secondSmallestNumber(array) {
     for (let i = 0; i < array.length; i++) {
         let temp = 0;
