@@ -4,7 +4,7 @@ function sortStringOfArray(array) {
     for (let i = 0; i < array.length; i++) {
         let temp = 0;
         for (let j = i + 1; j < array.length; j++) {
-            if (array[i] > array[j]) {
+            if (array[i].length > array[j].length) {
                 temp = array[i];
                 array[i] = array[j];
                 array[j] = temp;
@@ -13,6 +13,6 @@ function sortStringOfArray(array) {
     }
     return array;
 }
-const array = ["abc", "a", "ab", "abcde", "a", "abcsder"];
+const array = ["AKHGB", 'deF', 'ghij', 'hgh'];
 const result = sortStringOfArray(array);
 console.log("After Sorting string: ", result);

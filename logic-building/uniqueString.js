@@ -1,8 +1,6 @@
 //Write a function that takes an array of strings and returns a new array with only the unique strings 
 //(removing duplicates).
 function uniqueString(array) {
-    //const a = [...new Set(array)]
-    // return a;
     let uniqueStr = [];
     for (let i = 0; i < array.length; i++) {
         let isUnique = true;
