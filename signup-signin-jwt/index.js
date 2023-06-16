@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const bycrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const fs = require('fs/promises');
 require('dotenv').config();
@@ -14,9 +14,7 @@ app.post('/register', async (req, res) => {
     try {
         const data = await fs.readFile(userFile);
         const users = JSON.parse(data.toString());
-        console.log(users);
         const { name, email, password } = req.body;
-        console.log(req.body);
         const userExist = users.find((user) => user.email === email);
         if (userExist) {
             return res.status(400).send({ message: "user already exist." });
@@ -41,7 +39,7 @@ app.post('/login', async (req, res) => {
         return res.send({ statuscode: 400, message: "Invalid email" })
     }
     try {
-        const passValid = await bycrypt.compare(password, user.password);
+        const passValid = await bcrypt.compare(password, user.password);
         if (!passValid) {
             return res.send({ statuscode: 400, message: "Invalid password" })
         }
@@ -75,5 +73,5 @@ app.get('/verification', verifyToken, (req, res) => {
 })
 
 app.listen(3000, () => {
-    console.log("app is runnig on port 3000");
+    console.log("app is running on port 3000");
 })
