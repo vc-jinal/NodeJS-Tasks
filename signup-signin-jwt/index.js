@@ -25,7 +25,7 @@ app.post('/register', async (req, res) => {
         fs.writeFile(userFile, JSON.stringify(users, null, 2));
         return res.status(200).send({ message: "User registered successfully" })
     } catch (err) {
-        return res.status(400).send({ message: "registration failed", err });
+        return res.status(400).send({ message: "registration failed" });
     }
 })
 
