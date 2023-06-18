@@ -19,7 +19,7 @@ app.post('/register', async (req, res) => {
         if (userExist) {
             return res.status(400).send({ message: "user already exist." });
         }
-        const hashPassword = await bycrypt.hash(password, 10);
+        const hashPassword = await bcrypt.hash(password, 10);
         const user = { name, email, password: hashPassword }
         users.push(user);
         fs.writeFile(userFile, JSON.stringify(users, null, 2));
