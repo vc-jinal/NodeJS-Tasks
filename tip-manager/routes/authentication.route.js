@@ -8,7 +8,6 @@ const user = db.collection('users');
 require('dotenv').config();
 const signature = process.env.SECRET_KEY;
 
-
 // signup
 router.post('/signup', async (req, res) => {
     const { email, password, firstName, lastName, age, dob } = req.body;
@@ -30,7 +29,7 @@ router.post('/signup', async (req, res) => {
     }
 
     const savedUser = await user.insertOne(newUser);
-    res.send({ statusCode: 200, message: "User Created Successfully", user: savedUser })
+    return res.send({ statusCode: 200, message: "User Created Successfully", user: savedUser })
 })
 
 // login

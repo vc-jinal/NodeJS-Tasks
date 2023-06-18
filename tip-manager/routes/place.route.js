@@ -22,7 +22,7 @@ placeRouter.post('/', verifyToken, async (req, res) => {
         billAmount: billAmount,
         tipAmount: tipAmount,
         totalAmount: billAmount + tipAmount,
-        tipPercentage: Math.round(tipAmount / billAmount * 100),
+        tipPercentage: (tipAmount / billAmount * 100).toFixed(2),
         created_At: new Date(new Date(Date.now())),
         updated_At: new Date(new Date(Date.now()))
     }
@@ -30,6 +30,25 @@ placeRouter.post('/', verifyToken, async (req, res) => {
     const savedPlace = await place.insertOne(addPlaceDetails);
     return res.send({ statusCode: 200, message: "Place details added Successfully", user: savedPlace })
 })
+
+// common function to find repeatedItem
+function mostRepeatedItem(arr) {
+    let maxCount = 0;
+    let maxItem;
+    for (let i = 0; i < arr.length; i++) {
+        let count = 0;
+        for (let j = 0; j < arr.length; j++) {
+            if (arr[i] === arr[j]) {
+                count++;
+            }
+        }
+        if (count > maxCount) {
+            maxCount = count;
+            maxItem = arr[i];
+        }
+    }
+    return { maxItem, maxCount };
+}
 
 // repeated tip percentage by user
 placeRouter.get('/tipPercentage', verifyToken, async (req, res) => {
@@ -40,25 +59,7 @@ placeRouter.get('/tipPercentage', verifyToken, async (req, res) => {
         tipPercentage.push(query[i].tipPercentage);
     }
 
-    function mostRepeatedTipPercentage(arr) {
-        let maxCount = 0;
-        let repeatedTipPercentage;
-        for (let i = 0; i < arr.length; i++) {
-            let count = 0;
-            for (let j = 0; j < arr.length; j++) {
-                if (arr[i] == arr[j]) {
-                    count++;
-                }
-            }
-            if (count > maxCount) {
-                maxCount = count;
-                repeatedTipPercentage = arr[i];
-            }
-        }
-        return { repeatedTipPercentage, maxCount };
-    }
-
-    let maxTipPercent = mostRepeatedTipPercentage(tipPercentage);
+    let maxTipPercent = mostRepeatedItem(tipPercentage);
     return res.send({ statusCode: 200, message: "Most repeated tip percentage", tipPercentage: maxTipPercent });
 })
 
@@ -70,25 +71,8 @@ placeRouter.get('/visitPlaces', verifyToken, async (req, res) => {
     for (let i = 0; i < query.length; i++) {
         placeName.push(query[i].placeName);
     }
-    let maxPlace = mostFrequentPlace(placeName);
 
-    function mostFrequentPlace(arr) {
-        let maxCount = 0;
-        let maxVisitedPlace;
-        for (let i = 0; i < arr.length; i++) {
-            let count = 0;
-            for (let j = 0; j < arr.length; j++) {
-                if (arr[i] == arr[j])
-                    count++;
-            }
-            if (count > maxCount) {
-                maxCount = count;
-                maxVisitedPlace = arr[i];
-            }
-        }
-        return { maxVisitedPlace, maxCount };
-    }
-
+    let maxPlace = mostRepeatedItem(placeName);
     return res.send({ statusCode: 200, message: "Most visited Places by user", data: maxPlace })
 })
 
