@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const bycrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const fs = require('fs/promises');
 require('dotenv').config();
@@ -14,19 +14,16 @@ app.post('/register', async (req, res) => {
     try {
         const data = await fs.readFile(userFile);
         const users = JSON.parse(data.toString());
-
         const { name, email, password } = req.body;
         const userExist = users.find((user) => user.email === email);
         if (userExist) {
             return res.status(400).send({ message: "user already exist." });
         }
-
-        const hashPassword = await bycrypt.hash(password, 10);
+        const hashPassword = await bcrypt.hash(password, 10);
         const user = { name, email, password: hashPassword }
         users.push(user);
         fs.writeFile(userFile, JSON.stringify(users, null, 2));
         return res.status(200).send({ message: "User registered successfully" })
-
     } catch (err) {
         return res.status(400).send({ message: "registration failed" });
     }
@@ -42,7 +39,7 @@ app.post('/login', async (req, res) => {
         return res.send({ statuscode: 400, message: "Invalid email" })
     }
     try {
-        const passValid = await bycrypt.compare(password, user.password);
+        const passValid = await bcrypt.compare(password, user.password);
         if (!passValid) {
             return res.send({ statuscode: 400, message: "Invalid password" })
         }
@@ -76,5 +73,5 @@ app.get('/verification', verifyToken, (req, res) => {
 })
 
 app.listen(3000, () => {
-    console.log("app is runnig on port 3000");
+    console.log("app is running on port 3000");
 })
