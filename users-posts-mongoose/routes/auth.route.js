@@ -21,9 +21,7 @@ authRouter.post('/signUp', async (req, res) => {
             password: await bcrypt.hash(password, 10),
             dob: dob,
             age: age,
-            profilePicture: "",
-            created_at_date: Date(),
-            updated_at_date: Date()
+            profilePicture: ""
         }
         const addUser = await User.create(newUser);
 

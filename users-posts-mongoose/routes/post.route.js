@@ -12,7 +12,7 @@ postRouter.get('/', tokenVerification, async (req, res) => {
         if (!getUser) {
             return res.send({ statusCode: 404, message: "User not Found" })
         }
-        return res.send({ statusCode: 200, message: "Fetched User SuccessFully", getPost: getUser });
+        return res.send({ statusCode: 200, message: "User Fetched SuccessFully", getPost: getUser });
     }
     catch (error) {
         return res.send({ statusCode: 500, message: "Internal Server error" });

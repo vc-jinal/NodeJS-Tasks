@@ -7,9 +7,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, default: "" },
     dob: { type: String, default: "" },
     age: { type: String, default: "" },
-    profilePicture: { type: String, default: "" },
-    created_at_date: { type: Date, default: "" },
-    updated_at_date: { type: Date, default: "" }
+    profilePicture: { type: String, default: "" }
 },
     {
         timestamps: true

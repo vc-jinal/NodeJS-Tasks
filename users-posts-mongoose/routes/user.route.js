@@ -11,7 +11,7 @@ userRouter.get('/', tokenVerification, async (req, res) => {
         if (!getUser) {
             return res.send({ statusCode: 404, message: "User not Found" })
         }
-        return res.send({ statusCode: 200, message: "Fetched User SuccessFully", allUsers: getUser });
+        return res.send({ statusCode: 200, message: "User details Fetched SuccessFully", allUsers: getUser });
     }
     catch (error) {
         return res.send({ statusCode: 500, message: "Internal Server error" });
