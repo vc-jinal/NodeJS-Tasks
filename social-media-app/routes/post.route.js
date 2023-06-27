@@ -9,25 +9,32 @@ const postRouter = Router();
 // get all post of that user
 postRouter.get('/allPost', verifyToken, async (req, res) => {
     try {
+        console.log(req.body);
         const userExist = await User.findOne({ _id: req.user.id });
 
         if (!userExist) {
             return res.send({ statusCode: 404, message: "User not found" })
         }
-
         const userPost = await Post.find({
             $or: [
+                { description: { $regex: '/req.body/', $options: 'i' } },
+                { comment: { $regex: '/req.body/', $options: 'i' } },
                 { userId: req.user.id },
                 {
                     sharedUser:
                         { $in: req.user.id }
+                },
+                {
+                    mentionUser:
+                        { $in: req.user.id }
                 }
             ]
-        })
+        }).sort({ createdAt: -1 })
+
         return res.send({ statusCode: 200, message: "User Post fetched Successfully", user: userPost })
     }
     catch (error) {
-        return res.send({ statusCode: 500, message: "Internal Server Error" });
+        return res.send({ statusCode: 500, message: "Internal Server Error", error });
     }
 })
 
@@ -97,62 +104,62 @@ postRouter.post('/comment', verifyToken, async (req, res) => {
 
 // get comment on postId
 postRouter.get('/:postId', verifyToken, async (req, res) => {
-    // try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
 
-    const postId = req.params.postId;
-    const userExist = await User.findOne({ _id: req.user.id });
-    if (!userExist) {
-        return res.send({ statusCode: 404, message: "User not Found" });
-    }
-
-    const postDetails = await Post.findOne({ _id: postId });
-    if (!postDetails) {
-        return res.send({ statusCode: 404, message: "Post not found" });
-    }
-
-    if (postDetails.categories === 'private') {
-        let pagination;
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + page;
-
-        console.log("----------------------", startIndex, typeof startIndex);
-        console.log("----------------------", endIndex, typeof endIndex);
-
-        for (let i = 0; i < postDetails.sharedUser.length; i++) {
-            let data = postDetails.sharedUser[i];
-            let data1 = new Types.ObjectId(req.user.id);
-
-            if (data.toString() === data1.toString()) {
-                // console.log("----------------------", postDetails.commentData);
-                // console.log("----------------------", startIndex, typeof startIndex);
-                // console.log("----------------------", endIndex, typeof endIndex);
-                pagination = postDetails.commentData.slice(startIndex, endIndex);
-                // console.log("==================", pagination);
-                continue;
-            }
-            console.log("1234567654321");
+        const postId = req.params.postId;
+        const userExist = await User.findOne({ _id: req.user.id });
+        if (!userExist) {
+            return res.send({ statusCode: 404, message: "User not Found" });
         }
 
-        return res.send({
-            statusCode: 200,
-            message: "Comments on Post",
-            countOfComment: postDetails.commentData.length,
-            postDetails: pagination,
-            total_pages: Math.ceil(pagination.length / page),
-        });
-    } else {
-        return res.send({
-            statusCode: 200,
-            message: "public post comment",
-            postCommentDetails: postDetails.commentData,
-            countOfComment: postDetails.commentData.length
-        });
+        const postDetails = await Post.findOne({ _id: postId });
+        if (!postDetails) {
+            return res.send({ statusCode: 404, message: "Post not found" });
+        }
+
+        if (postDetails.categories === 'private') {
+            let pagination;
+            const startIndex = (page - 1) * limit;
+            const endIndex = startIndex + page;
+
+            console.log("----------------------", startIndex, typeof startIndex);
+            console.log("----------------------", endIndex, typeof endIndex);
+
+            for (let i = 0; i < postDetails.sharedUser.length; i++) {
+                let data = postDetails.sharedUser[i];
+                let data1 = new Types.ObjectId(req.user.id);
+
+                if (data.toString() === data1.toString()) {
+                    // console.log("----------------------", postDetails.commentData);
+                    // console.log("----------------------", startIndex, typeof startIndex);
+                    // console.log("----------------------", endIndex, typeof endIndex);
+                    pagination = postDetails.commentData.slice(startIndex, endIndex);
+                    // console.log("==================", pagination);
+                    continue;
+                }
+                console.log("1234567654321");
+            }
+
+            return res.send({
+                statusCode: 200,
+                message: "Comments on Post",
+                countOfComment: postDetails.commentData.length,
+                postDetails: pagination,
+                total_pages: Math.ceil(pagination.length / page),
+            });
+        } else {
+            return res.send({
+                statusCode: 200,
+                message: "public post comment",
+                postCommentDetails: postDetails.commentData,
+                countOfComment: postDetails.commentData.length
+            });
+        }
+    } catch (error) {
+        return res.send({ statusCode: 500, message: "Internal Server Error", error })
     }
-    // } catch (error) {
-    //     return res.send({ statusCode: 500, message: "Internal Server Error", error })
-    // }
 })
 
-export default postRouter;
+export default postRouter; 
