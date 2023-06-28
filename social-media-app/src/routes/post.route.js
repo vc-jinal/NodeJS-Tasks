@@ -1,7 +1,7 @@
 import { Router, response } from "express";
 import Post from '../models/post.module.js';
 import User from '../models/user.model.js';
-import verifyToken from '../jwt.js';
+import verifyToken from '../utils/jwt.js';
 import upload from "../utils/fileUpload.js";
 import { Types } from "mongoose";
 const postRouter = Router();

@@ -6,7 +6,6 @@ export const joiMiddleware = (schema) => {
         }
         else {
             const { error } = schema.validate(requestBody);
-            console.log("error", error);
             if (error) {
                 return res.send({ statusCode: 400, message: "Error", error: error.details[0].message });
             }

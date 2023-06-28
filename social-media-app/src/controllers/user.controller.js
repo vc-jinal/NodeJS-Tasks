@@ -1,10 +1,10 @@
 import { Router } from "express";
 import User from "../models/user.model.js";
 const userRouter = Router();
-import verifyToken from "../jwt.js";
+import verifyToken from "../utils/jwt.js";
 
 // edit profile of user
-userRouter.put('/', verifyToken, async (req, res) => {
+export const editProfile = async (req, res) => {
     try {
         const { name, emailId, phoneNo, userName } = req.body;
         const userExist = await User.findOne({ _id: req.user.id, emailId: req.user.emailId });
@@ -31,10 +31,10 @@ userRouter.put('/', verifyToken, async (req, res) => {
     catch (error) {
         return res.send({ statusCode: 500, message: "Internal Server Error", error });
     }
-})
+}
 
 // get user details
-userRouter.get('/', verifyToken, async (req, res) => {
+export const getUserDetail = async (req, res) => {
     try {
         const userExist = await User.findOne({ emailId: req.user.emailId });
         if (!userExist) {
@@ -45,6 +45,4 @@ userRouter.get('/', verifyToken, async (req, res) => {
     catch (error) {
         return res.send({ statusCode: 500, message: "Internal Server Error" });
     }
-})
-
-export default userRouter;
+}

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import User from '../models/user.model.js'
-import verifyToken from "../jwt.js";
+import verifyToken from "../utils/jwt.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -10,7 +10,7 @@ import { joiMiddleware } from "../middlewares/joi.middleware.js";
 import { signUpSchema } from "../validations/auth.validation.js";
 
 // signup
-authRouter.post('/', joiMiddleware(signUpSchema), async (req, res) => {
+export const signUp = async (req, res) => {
     try {
         const { name, emailId, phoneNo, password } = req.body;
         const emailExist = await User.findOne({ emailId: emailId, phoneNo: phoneNo });
@@ -31,10 +31,10 @@ authRouter.post('/', joiMiddleware(signUpSchema), async (req, res) => {
     catch (error) {
         return res.send({ statusCode: 500, message: "Internal Server error" });
     }
-})
+}
 
 // login
-authRouter.post('/login', async (req, res) => {
+export const login = async (req, res) => {
     try {
         const { emailId, password } = req.body;
         const emailExist = await User.findOne({ emailId: emailId });
@@ -58,10 +58,10 @@ authRouter.post('/login', async (req, res) => {
     catch (error) {
         return res.send({ statusCode: 500, message: "Internal Server Error" })
     }
-})
+}
 
 // change Password
-authRouter.post('/changePassword', verifyToken, async (req, res) => {
+export const changePassword = async (req, res) => {
     try {
 
         const password = req.body.password;
@@ -78,6 +78,4 @@ authRouter.post('/changePassword', verifyToken, async (req, res) => {
     } catch (error) {
         return res.send({ statusCode: 500, message: "Internal Server Error", error: error });
     }
-})
-
-export default authRouter;
+}
