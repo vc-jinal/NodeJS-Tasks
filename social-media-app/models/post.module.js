@@ -17,8 +17,10 @@ const postSchema = new mongoose.Schema({
         _id: false,
         userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
         comment: { type: 'String', default: "" },
-        mentionId: { type: mongoose.Schema.Types.ObjectId, ref: 'users' }
-    }],
+        mentionId: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+        createdAt: Date
+    }
+    ],
     sharedUser: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }]
 },
     {

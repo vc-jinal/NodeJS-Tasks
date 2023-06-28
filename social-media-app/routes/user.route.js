@@ -6,23 +6,30 @@ import verifyToken from "../jwt.js";
 // edit profile of user
 userRouter.put('/', verifyToken, async (req, res) => {
     try {
-        const { name, emailId, phoneNo } = req.body;
-        const userExist = await User.findOne({ _id: req.user.id });
+        const { name, emailId, phoneNo, userName } = req.body;
+        const userExist = await User.findOne({ _id: req.user.id, emailId: req.user.emailId });
+        // console.log(userExist);
         if (!userExist) {
             return res.send({ statusCode: 404, message: "User not found" });
         }
+
         const updateUser = await User.updateOne({ _id: req.user.id },
             {
                 name: name,
                 emailId: emailId,
                 phoneNo: phoneNo,
-                userName: emailId.split('@')[0] + Math.floor(Math.random() * 1000)
+                userName: userName
             }
         )
+        // console.log("-=-=-=-=-", updateUser.code);
+        // if (updateUser.code == "11000") {
+        //     return res.send({ statusCode: 409, message: "EmailId is already Exist Enter different EmailId" })
+        // }
+        // console.log(updateUser);
         return res.send({ statusCode: 200, message: "User Details Updated Successfully", userDetail: updateUser })
     }
     catch (error) {
-        return res.send({ statusCode: 500, message: "Internal Server Error" });
+        return res.send({ statusCode: 500, message: "Internal Server Error", error });
     }
 })
 

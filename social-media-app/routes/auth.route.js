@@ -6,15 +6,18 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 const authRouter = Router();
+import { joiMiddleware } from "../middlewares/joi.middleware.js";
+import { signUpSchema } from "../validations/auth.validation.js";
 
 // signup
-authRouter.post('/', async (req, res) => {
+authRouter.post('/', joiMiddleware(signUpSchema), async (req, res) => {
     try {
         const { name, emailId, phoneNo, password } = req.body;
-        const emailExist = await User.findOne({ emailId: emailId });
+        const emailExist = await User.findOne({ emailId: emailId, phoneNo: phoneNo });
         if (emailExist) {
-            return res.send({ statusCode: 400, message: "User Already Exist" });
+            return res.send({ statusCode: 400, message: "EmailId or PhoneNo Already Exist" });
         }
+
         const newUser = {
             name: name,
             emailId: emailId,
@@ -35,17 +38,21 @@ authRouter.post('/login', async (req, res) => {
     try {
         const { emailId, password } = req.body;
         const emailExist = await User.findOne({ emailId: emailId });
+
         if (!emailExist) {
             return res.send({ statusCode: 404, message: "User Not Found" });
         }
+
         const comparePassword = await bcrypt.compare(password, emailExist.password);
         if (!comparePassword) {
-            return res.send({ statusCode: 500, message: "Invalid Password" });
+            return res.send({ statusCode: 401, message: "Invalid Email or password" });
         }
+
         const token = jwt.sign({
             emailId: emailId,
-            id: emailExist._id
-        }, process.env.SECRET_KEY, { expiresIn: '4h' })
+            id: emailExist._id,
+            password: emailExist.password
+        }, process.env.SECRET_KEY, { expiresIn: '24h' })
         return res.send({ statusCode: 200, message: "User logged in Successfully", token: token })
     }
     catch (error) {
@@ -56,7 +63,9 @@ authRouter.post('/login', async (req, res) => {
 // change Password
 authRouter.post('/changePassword', verifyToken, async (req, res) => {
     try {
+
         const password = req.body.password;
+        console.log(req.user);
         const userExist = await User.findOne({ _id: req.user.id });
         const hashedPassword = await bcrypt.hash(password, 10);
         if (!userExist) {

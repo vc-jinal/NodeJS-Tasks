@@ -8,37 +8,51 @@ const postRouter = Router();
 
 // get all post of that user
 postRouter.get('/allPost', verifyToken, async (req, res) => {
-    try {
-        console.log(req.body);
-        const userExist = await User.findOne({ _id: req.user.id });
+    // try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
-        if (!userExist) {
-            return res.send({ statusCode: 404, message: "User not found" })
-        }
-        const userPost = await Post.find({
-            $or: [
-                { description: { $regex: '/req.body/', $options: 'i' } },
-                { comment: { $regex: '/req.body/', $options: 'i' } },
-                { userId: req.user.id },
-                {
-                    sharedUser:
-                        { $in: req.user.id }
-                },
-                {
-                    mentionUser:
-                        { $in: req.user.id }
-                }
-            ]
-        }).sort({ createdAt: -1 })
+    const keyValue = req.body.keyValue;
 
-        return res.send({ statusCode: 200, message: "User Post fetched Successfully", user: userPost })
+    const userExist = await User.findOne({ _id: req.user.id });
+
+    if (!userExist) {
+        return res.send({ statusCode: 404, message: "User not found" })
     }
-    catch (error) {
-        return res.send({ statusCode: 500, message: "Internal Server Error", error });
-    }
+
+    const userPost = await Post.find({
+        $and: [
+            {
+                $or: [
+                    { description: { $regex: new RegExp(keyValue, 'i') } },
+                    { 'commentData.comment': { $regex: new RegExp(keyValue, 'i') } }
+                ]
+            },
+            {
+                $or: [
+                    { categories: 'public' },
+                    { userId: req.user.id },
+                    {
+                        sharedUser:
+                            { $in: req.user.id }
+                    },
+                    {
+                        mentionUser:
+                            { $in: req.user.id }
+                    }
+                ]
+            }
+        ]
+    }).sort({ 'commentData.createdAt': -1 }).limit(limit).skip((page - 1) * limit);
+
+    return res.send({ statusCode: 200, message: "User Post fetched Successfully", user: userPost })
+    // }
+    // catch (error) {
+    //     return res.send({ statusCode: 500, message: "Internal Server Error", error });
+    // }
 })
 
-// upload post
+// upload Post 
 postRouter.post('/file', verifyToken, upload.single('posts'), async (req, res) => {
     try {
         const postData = req.file;
@@ -80,7 +94,8 @@ postRouter.post('/comment', verifyToken, async (req, res) => {
         const newComment = {
             userId: userId,
             comment: comment,
-            mentionUser: mentionUser
+            mentionUser: mentionUser,
+            createdAt: Date.now()
         }
 
         const isPostPublic = await Post.findOne({ _id: postId });
@@ -162,4 +177,5 @@ postRouter.get('/:postId', verifyToken, async (req, res) => {
     }
 })
 
-export default postRouter; 
+export default postRouter;
+
