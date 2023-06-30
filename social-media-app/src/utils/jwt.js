@@ -14,11 +14,10 @@ const verifyToken = async (req, res, next) => {
     if (decoded) {
         req.user = decoded;
         const userDetails = await User.findOne({ emailId: req.user.emailId });
-
-        if (req.user.password !== userDetails.password) {
+        console.log(userDetails);
+        if (req.user.password !== userDetails.password || null) {
             return res.send({ statusCode: 404, message: "Please Re-login" })
         }
-
         next();
     }
 }

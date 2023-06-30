@@ -8,7 +8,7 @@ export const editProfile = async (req, res) => {
     try {
         const { name, emailId, phoneNo, userName } = req.body;
         const userExist = await User.findOne({ _id: req.user.id, emailId: req.user.emailId });
-        // console.log(userExist);
+        console.log(userExist);
         if (!userExist) {
             return res.send({ statusCode: 404, message: "User not found" });
         }
@@ -21,8 +21,8 @@ export const editProfile = async (req, res) => {
                 userName: userName
             }
         )
-        // console.log("-=-=-=-=-", updateUser.code);
-        // if (updateUser.code == "11000") {
+        // console.log("-=-=-=-=-", updateUser);
+        // if (updateUser.code === 11000) {
         //     return res.send({ statusCode: 409, message: "EmailId is already Exist Enter different EmailId" })
         // }
         // console.log(updateUser);
@@ -36,13 +36,21 @@ export const editProfile = async (req, res) => {
 // get user details
 export const getUserDetail = async (req, res) => {
     try {
-        const userExist = await User.findOne({ emailId: req.user.emailId });
+        const userExist = await User.findOne(
+            { emailId: req.user.emailId }, {},
+            {
+                projection: {
+                    userName: 1,
+                    emailId: 1,
+                }
+            }
+        );
         if (!userExist) {
             return res.send({ statusCode: 404, message: "User not found" });
         }
         return res.send({ statusCode: 200, message: "User Details Fetched Successfully", user: userExist });
     }
     catch (error) {
-        return res.send({ statusCode: 500, message: "Internal Server Error" });
+        return res.send({ statusCode: 500, message: "Internal Server Error", error: error });
     }
 }
