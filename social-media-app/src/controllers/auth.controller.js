@@ -65,7 +65,6 @@ export const changePassword = async (req, res) => {
     try {
 
         const password = req.body.password;
-        console.log(req.user);
         const userExist = await User.findOne({ _id: req.user.id });
         const hashedPassword = await bcrypt.hash(password, 10);
         if (!userExist) {

@@ -8,76 +8,98 @@ const postRouter = Router();
 
 // get all post of that user
 export const getAllPostOfUser = async (req, res) => {
-    // try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
 
-    const keyValue = req.body.keyValue;
+        const keyValue = req.query.keyValue; //text search
+        const searchUserById = req.query.searchUserById;
+        const mentionUserId = req.user.id;
+        const userExist = await User.findOne({ _id: req.user.id });
 
-    const userExist = await User.findOne({ _id: req.user.id });
-
-    if (!userExist) {
-        return res.send({ statusCode: 404, message: "User not found" })
-    }
-    const userPost = await Post.aggregate([
-        {
-            $match: {
-                $and: [
-                    {
+        if (!userExist) {
+            return res.send({ statusCode: 404, message: "User not found" })
+        }
+        if (searchUserById) {
+            const getSearchUserPost = await Post.aggregate([{
+                $match: {
+                    $and: [{
                         $or: [
                             { description: { $regex: new RegExp(keyValue, 'i') } },
                             { 'commentData.comment': { $regex: new RegExp(keyValue, 'i') } }
-                        ]
-                    },
-                    {
+                        ],
                         $or: [
-                            { categories: 'public' },
-                            { userId: req.user.id },
-                            { sharedUser: { $in: [req.user.id] } },
-                            { mentionUser: { $in: [req.user.id] } },
-                            { 'commentData.mentionId': { $in: [req.user.id] } }
+                            // { userId: new Types.ObjectId(searchUserById) },
+                            { sharedUser: [{ $in: new Types.ObjectId(req.user.id) }] }
+                        ],
+                        $or: [
+                            { userId: new Types.ObjectId(searchUserById) },
+                            { sharedUser: { $in: [new Types.ObjectId(searchUserById)] } },
+                            { mentionUser: { $in: [new Types.ObjectId(searchUserById)] } },
+                            { 'commentData.mentionId': { $in: [new Types.ObjectId(searchUserById)] } }
+                        ]
+                    }]
+                }
+            }, {
+                $project: {
+                    postData: 1,
+                    description: 1,
+                    mentionUserId: 1,
+                    categories: 1,
+                    lastComment: { $arrayElemAt: ['$commentData.comment', -1] },
+                    sharedUser: 1
+                }
+            }]).limit(limit).skip((page - 1) * limit);
+            return res.send({ statusCode: 200, message: "Search User Post", searchedUser: getSearchUserPost })
+        }
+        if (mentionUserId) {
+            const getMentionPost = await Post.aggregate([{
+                $match: {
+                    $and: [{
+                        $or: [
+                            { userId: new Types.ObjectId(req.user.id) },
+                            { sharedUser: [{ $in: new Types.ObjectId(req.user.id) }] }
+                        ],
+                        $or: [
+                            { sharedUser: { $in: [new Types.ObjectId(req.user.id)] } },
+                            { mentionUser: { $in: [new Types.ObjectId(req.user.id)] } },
+                            { 'commentData.mentionId': { $in: [new Types.ObjectId(req.user.id)] } }
+                        ], $or: [
+                            { description: { $regex: new RegExp(keyValue, 'i') } },
+                            { 'commentData.comment': { $regex: new RegExp(keyValue, 'i') } }
+                        ],
+                    }]
+                }
+            }, {
+                $project: {
+                    postData: 1,
+                    description: 1,
+                    mentionUserId: 1,
+                    categories: 1,
+                    lastComment: { $arrayElemAt: ['$commentData.comment', -1] },
+                    sharedUser: 1
+                }
+            }
+            ]).limit(limit).skip((page - 1) * limit);
+            console.log(getMentionPost);
+            return res.send({ statusCode: 200, message: "Mention User Post", mentionPost: getMentionPost })
+        }
+        else {
+            const getPublicPost = await Post.aggregate([
+                {
+                    $match: {
+                        $or: [
+                            { categories: 'public' }
                         ]
                     }
-                ]
-            }
-        },
-        { $sort: { 'commentData.createdAt': -1 } },
-        { $limit: limit },
-        { $skip: (page - 1) * limit }
-    ]);
-
-    // const userPost = await Post.find({
-    //     $and: [
-    //         {
-    //             $or: [
-    //                 { description: { $regex: new RegExp(keyValue, 'i') } },
-    //                 { 'commentData.comment': { $regex: new RegExp(keyValue, 'i') } }
-    //             ]
-    //         },
-    //         {
-    //             $or: [
-    //                 { categories: 'public' },
-    //                 { userId: req.user.id },
-    //                 {
-    //                     sharedUser:
-    //                         { $in: req.user.id }
-    //                 },
-    //                 {
-    //                     mentionUser:
-    //                         { $in: req.user.id }
-    //                 },
-    //                 {
-    //                     'commentData.mentionUser': { $in: req.user.id }
-    //                 }
-    //             ]
-    //         }
-    //     ]
-    // }).sort({ 'commentData.createdAt': -1 }).limit(limit).skip((page - 1) * limit);
-    return res.send({ statusCode: 200, message: "User Post fetched Successfully", user: userPost })
-    // }
-    // catch (error) {
-    //     return res.send({ statusCode: 500, message: "Internal Server Error", error });
-    // }
+                }
+            ]).sort({ 'commentData.createdAt': -1 }).limit(limit).skip((page - 1) * limit);
+            return res.send({ statusCode: 200, message: "All Public Post", allPost: getPublicPost })
+        }
+    }
+    catch (error) {
+        return res.send({ statusCode: 500, message: "Internal Server Error", error })
+    }
 }
 
 // upload Post 
@@ -165,29 +187,20 @@ export const getCommentOfPost = async (req, res) => {
         if (postDetails.categories === 'private') {
             let pagination;
             const startIndex = (page - 1) * limit;
-            // const endIndex = startIndex + page;
             const endIndex = page * limit;
 
             if (startIndex >= postDetails.commentData.length) {
                 return res.send({ statusCode: 200, message: "NO comments found" });
             }
 
-            console.log("----------------------", startIndex, typeof startIndex);
-            console.log("----------------------", endIndex, typeof endIndex);
-
             for (let i = 0; i < postDetails.sharedUser.length; i++) {
                 let data = postDetails.sharedUser[i];
                 let data1 = new Types.ObjectId(req.user.id);
 
                 if (data.toString() === data1.toString()) {
-                    // console.log("----------------------", postDetails.commentData);
-                    // console.log("----------------------", startIndex, typeof startIndex);
-                    // console.log("----------------------", endIndex, typeof endIndex);
                     pagination = postDetails.commentData.slice(startIndex, endIndex);
-                    // console.log("==================", pagination);
                     continue;
                 }
-                console.log("1234567654321");
             }
 
             return res.send({
@@ -195,7 +208,6 @@ export const getCommentOfPost = async (req, res) => {
                 message: "Comments on Post",
                 countOfComment: postDetails.commentData.length,
                 postDetails: pagination,
-                // total_pages: Math.ceil(pagination.length / page),
                 total_pages: Math.ceil(postDetails.commentData.length / limit)
             });
         } else {
@@ -210,6 +222,3 @@ export const getCommentOfPost = async (req, res) => {
         return res.send({ statusCode: 500, message: "Internal Server Error", error })
     }
 }
-
-export default postRouter;
-

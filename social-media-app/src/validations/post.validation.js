@@ -1,7 +1,7 @@
 import Joi from "joi";
 
 export const getAllPostOfUserSchema = Joi.object({
-    keyValue: Joi.string().required().messages(
+    keyValue: Joi.string().messages(
         {
             "string.empty": "key of that value is not allowed to be empty",
             "any.required": "key of that value is required"

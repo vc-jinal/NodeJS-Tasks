@@ -13,8 +13,10 @@ const verifyToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.SECRET_KEY)
     if (decoded) {
         req.user = decoded;
-        const userDetails = await User.findOne({ emailId: req.user.emailId });
-        console.log(userDetails);
+        const userDetails = await User.findOne({ emailId: req.user.emailId, _id: req.user.id });
+        if (!userDetails) {
+            return res.send({ statusCode: 404, message: "User Not Found" })
+        }
         if (req.user.password !== userDetails.password || null) {
             return res.send({ statusCode: 404, message: "Please Re-login" })
         }

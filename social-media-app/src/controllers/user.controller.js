@@ -21,14 +21,12 @@ export const editProfile = async (req, res) => {
                 userName: userName
             }
         )
-        // console.log("-=-=-=-=-", updateUser);
-        // if (updateUser.code === 11000) {
-        //     return res.send({ statusCode: 409, message: "EmailId is already Exist Enter different EmailId" })
-        // }
-        // console.log(updateUser);
         return res.send({ statusCode: 200, message: "User Details Updated Successfully", userDetail: updateUser })
     }
     catch (error) {
+        if (error.code === 11000) {
+            return res.send({ statusCode: 409, message: "EmailId is already Exist Enter different EmailId" })
+        }
         return res.send({ statusCode: 500, message: "Internal Server Error", error });
     }
 }
