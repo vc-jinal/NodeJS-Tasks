@@ -17,14 +17,14 @@ placeRouter.post('/', verifyToken, async (req, res) => {
     }
 
     const addPlaceDetails = {
-        user_id: new ObjectId(req.user.id),
+        // user_id: new ObjectId(req.user.id),
         placeName: placeName,
         billAmount: billAmount,
         tipAmount: tipAmount,
-        totalAmount: billAmount + tipAmount,
-        tipPercentage: (tipAmount / billAmount * 100).toFixed(2),
-        created_At: new Date(new Date(Date.now())),
-        updated_At: new Date(new Date(Date.now()))
+        // totalAmount: billAmount + tipAmount,
+        // tipPercentage: (tipAmount / billAmount * 100).toFixed(2),
+        // created_At: new Date(new Date(Date.now())),
+        // updated_At: new Date(new Date(Date.now()))   
     }
 
     const savedPlace = await place.insertOne(addPlaceDetails);

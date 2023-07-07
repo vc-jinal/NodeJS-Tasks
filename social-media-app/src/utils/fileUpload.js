@@ -5,7 +5,6 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         let path;
         if (file.fieldname === 'posts') {
-            // cb(null, '/public/posts')
             path = 'public/postUpload'
         }
         cb(null, path)

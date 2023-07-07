@@ -5,4 +5,4 @@ const url = process.env.URL;
 
 mongoose.connect(url)
     .then(() => console.log("Database connected successfully"))
-    .catch((error) => console.error("error in connecting database", error))
+    .catch((error) => console.error("error in connecting database", error)) 

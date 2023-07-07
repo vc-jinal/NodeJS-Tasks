@@ -23,7 +23,7 @@ router.post('/signup', async (req, res) => {
         firstName: firstName,
         lastName: lastName,
         age: age,
-        dob: dob,
+        dob: dob,               
         created_at: new Date(Date.now()),
         updated_at: new Date(Date.now())
     }
