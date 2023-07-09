@@ -1,6 +1,7 @@
 import { NextFunction, Response, Request } from "express";
+import Joi from "joi";
 
-export const joiMiddleware = (schema: any) => {
+export const joiMiddleware = (schema: Joi.ObjectSchema) => {
     return (req: Request, res: Response, next: NextFunction) => {
         let requestBody = req.body;
         if (!requestBody) {

@@ -1,15 +1,15 @@
 import jwt from "jsonwebtoken";
-import User from "../db/modules/user.module";
+import User from "../db/models/user.model";
 import { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 dotenv.config();
 
-export interface AuthenticationRequest extends Request {
-    emailId: String;
-    id: String;
+export interface AuthenticationRequest {
+    emailId?: String;
+    id?: String;
 }
 
-export const verifyToken: any = async (req: AuthenticationRequest, res: Response, next: NextFunction) => {
+export const verifyToken = async (req: AuthenticationRequest & Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization;
     if (!token) {
         return res.send({ statusCode: 404, message: "Token Required" });

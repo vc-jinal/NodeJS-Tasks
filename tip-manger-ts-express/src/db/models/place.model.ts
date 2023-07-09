@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { IUser } from "./user.module";
+import { IUser } from "./user.model";
 
 export interface IPlace extends Document {
     userId: IUser["_id"];

@@ -1,16 +1,18 @@
-import { Router, Request, Response } from "express";
-import Place from "../db/modules/post.module";
-import User from "../db/modules/user.module";
+import { Request, Response } from "express";
+import Place from "../db/models/place.model";
+import User from "../db/models/user.model";
 import { AuthenticationRequest } from "../utils/jwt";
-import mongoose, { Types } from "mongoose";
+import mongoose from "mongoose";
+import { ResponseHandler } from "../common/types";
 
-export const addPlace: any = async (req: AuthenticationRequest, res: Response) => {
+// add Place Details
+export const addPlace = async (req: AuthenticationRequest & Request, res: Response) => {
     try {
         const { placeName, billAmount, tipAmount } = req.body;
 
         const userExist = await User.findOne({ _id: req.id });
         if (!userExist) {
-            return res.send({ statusCode: 404, message: "User Not Found" });
+            return ResponseHandler(res, 404, "User Not Found");
         }
 
         const newPlaceDetails = {
@@ -21,19 +23,19 @@ export const addPlace: any = async (req: AuthenticationRequest, res: Response) =
         };
 
         const addplaceDetails = await Place.create(newPlaceDetails);
-        return res.send({ statusCode: 200, message: "Place Added Successfully", placeDetails: addplaceDetails });
+        return ResponseHandler(res, 200, "Place Added Successfully", { addplaceDetails });
     } catch (error) {
-        return res.send({ statusCode: 500, message: "Internal Server Error" });
+        return ResponseHandler(res, 500, "Internal Server Error", [], [error]);
     }
 };
 
-export const totalTipByUser: any = async (req: AuthenticationRequest, res: Response) => {
+// total tip given by user
+export const totalTipByUser = async (req: AuthenticationRequest & Request, res: Response) => {
     try {
         const placeName = req.params.placeName;
         const totalTip = await Place.find(
             {
                 userId: req.id,
-                // userId: new Types.ObjectId(req.id),
                 placeName: placeName,
             },
             {
@@ -42,14 +44,14 @@ export const totalTipByUser: any = async (req: AuthenticationRequest, res: Respo
                 userId: 1,
             }
         );
-        return res.send({ StatusCode: 200, message: "Total Tip given by User", totalTip: totalTip });
+        return ResponseHandler(res, 200, "Total Tip given by User", { totalTip });
     } catch (error) {
-        return res.send({ statusCode: 500, message: "Internal Server Error" });
+        return ResponseHandler(res, 500, "Internal Server Error", [], [error]);
     }
 };
 
 // repeated Tip Percentage
-export const repeatedTipPercentage: any = async (req: AuthenticationRequest, res: Response) => {
+export const repeatedTipPercentage = async (req: AuthenticationRequest & Request, res: Response) => {
     try {
         const pipeline = await Place.aggregate([
             {
@@ -72,33 +74,34 @@ export const repeatedTipPercentage: any = async (req: AuthenticationRequest, res
             {
                 $group: {
                     _id: "$tipPercentage",
-                    // count: { $sum: 1 },
                     visitedPlaceCount: { $count: {} },
                 },
             },
             {
                 $project: {
+                    _id: 0,
                     // tipPercenatge: "$_id",
-                    tipPercenatge: 1,
                     placeName: 1,
+                    tipPercenatge: { $round: ["$_id", 2] },
+                    // userId: 1,
                     visitedPlaceCount: 1,
                 },
             },
             {
-                $sort: { visitedPlaceCount: -1 },
+                $sort: { visitedPlaceCount: -1, tipPercenatge: -1 },
             },
             {
                 $limit: 1,
             },
         ]);
-        return res.send({ statusCode: 200, message: "Repeated Tip Percenatge", repeatedTipPercent: pipeline });
+        return ResponseHandler(res, 200, "Repeated Tip Percenatge", { pipeline });
     } catch (error) {
-        return res.send({ statusCode: 500, message: "Internal Server Error" });
+        return ResponseHandler(res, 500, "Internal Server Error", [], [error]);
     }
 };
 
 // most visited place by user
-export const mostVisitedPlace: any = async (req: AuthenticationRequest, res: Response) => {
+export const mostVisitedPlace = async (req: AuthenticationRequest & Request, res: Response) => {
     try {
         const pipeline = await Place.aggregate([
             {
@@ -113,21 +116,22 @@ export const mostVisitedPlace: any = async (req: AuthenticationRequest, res: Res
                 },
             },
             {
+                $project: {
+                    _id: 0,
+                    placeName: "$_id",
+                    userId: 1,
+                    count: 1,
+                },
+            },
+            {
                 $sort: { count: -1 },
             },
             {
                 $limit: 1,
             },
-            {
-                $project: {
-                    placeName: 1,
-                    userId: 1,
-                    count: 1,
-                },
-            },
         ]);
-        return res.send({ statusCode: 200, message: "Repeated visited place", repeatedVisitedPlace: pipeline });
+        return ResponseHandler(res, 200, "Repeated visited place", { pipeline });
     } catch (error) {
-        return res.send({ statusCode: 500, message: "Internal Server Error" });
+        return ResponseHandler(res, 500, "Internal Server Error", [], [error]);
     }
 };

@@ -1,8 +1,9 @@
-import { Router, Request, Response } from "express";
+import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import User from "../db/modules/user.module";
+import jwt from "jsonwebtoken";
+import User from "../db/models/user.model";
 import dotenv from "dotenv";
+import { ResponseHandler } from "../common/types";
 dotenv.config();
 
 // signUp
@@ -11,7 +12,7 @@ export const signUp = async (req: Request, res: Response) => {
         const { firstName, lastName, emailId, password, dob } = req.body;
         const emailExist = await User.findOne({ emailId: emailId });
         if (emailExist) {
-            return res.send({ statusCode: 400, message: "EmailId already Exist" });
+            return ResponseHandler(res, 400, "EmailId already Exist");
         }
         const newUser = {
             firstName: firstName,
@@ -21,13 +22,9 @@ export const signUp = async (req: Request, res: Response) => {
             dob: dob,
         };
         const addNewUser = await User.create(newUser);
-        return res.send({
-            statusCode: 200,
-            message: "User Created Successfully",
-            adduser: addNewUser,
-        });
+        return ResponseHandler(res, 200, "User Created Successfully", { addNewUser });
     } catch (error) {
-        return res.send({ statusCode: 500, message: "Internal Server Error" });
+        return ResponseHandler(res, 500, "Internal Server Error", [], [error]);
     }
 };
 
@@ -39,12 +36,12 @@ export const signIn = async (req: Request, res: Response) => {
         const emailExist = await User.findOne({ emailId: emailId });
 
         if (!emailExist) {
-            return res.send({ statusCode: 404, message: "User Not Found" });
+            return ResponseHandler(res, 404, "User Not Found");
         }
 
         const comparePassword = await bcrypt.compare(password, String(emailExist.password));
         if (!comparePassword) {
-            return res.send({ statusCode: 401, message: "Invalid Credential" });
+            return ResponseHandler(res, 401, "Invalid Credential");
         }
 
         const payload = {
@@ -59,13 +56,8 @@ export const signIn = async (req: Request, res: Response) => {
             },
             process.env.SECRET_KEY as jwt.Secret
         );
-
-        return res.send({
-            statusCode: 200,
-            message: "User Logged In Successfully",
-            token: token,
-        });
+        return ResponseHandler(res, 200, "User Logged In Successfully", { token });
     } catch (error) {
-        return res.send({ statusCode: 500, emssage: "Internal Server Error" });
+        return ResponseHandler(res, 500, "Internal Server Error");
     }
 };
