@@ -1,19 +1,19 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import User from "../db/models/user.model";
 import { AuthenticationRequest } from "../utils/jwt";
 import { ResponseHandler } from "../common/types";
+import { deleteUserDetails, getAllUserDetails, getUserDetails, updateUserDetails } from "../services/user.service";
 
 // all users
 export const getAllUsers = async (req: AuthenticationRequest & Request, res: Response) => {
-    const users = await User.find();
+    const users = await getAllUserDetails();
     return ResponseHandler(res, 200, "All User fetched Successfully", { users });
 };
 
 //get user by id
 export const getUserById = async (req: Request & AuthenticationRequest, res: Response) => {
     try {
-        const getUser = await User.findOne({ emailId: req.emailId });
+        const getUser = await getUserDetails({ emailId: req.emailId });
         if (!getUser) {
             return ResponseHandler(res, 404, "User not found");
         }
@@ -27,13 +27,14 @@ export const getUserById = async (req: Request & AuthenticationRequest, res: Res
 export const updateUser = async (req: AuthenticationRequest & Request, res: Response) => {
     try {
         const { firstName, lastName, password, dob } = req.body;
-        const getUser = await User.findOne({ emailId: req.emailId });
+
+        const getUser = await getUserDetails({ emailId: req.emailId });
 
         if (!getUser) {
             return ResponseHandler(res, 404, "User not found");
         }
 
-        const updateUser = await User.updateOne(
+        const updateUser = await updateUserDetails(
             { emailId: req.emailId },
             {
                 firstName: firstName,
@@ -42,6 +43,7 @@ export const updateUser = async (req: AuthenticationRequest & Request, res: Resp
                 dob: dob,
             }
         );
+
         return ResponseHandler(res, 200, "Details updated successfully", { updateUser });
     } catch (error) {
         return ResponseHandler(res, 500, "Internal Server Error", [], [error]);
@@ -51,7 +53,7 @@ export const updateUser = async (req: AuthenticationRequest & Request, res: Resp
 // Delete User
 export const deleteUser = async (req: AuthenticationRequest & Request, res: Response) => {
     try {
-        const deletedUser = await User.deleteOne({ emailId: req.emailId });
+        const deletedUser = await deleteUserDetails({ emailId: req.emailId });
         if (deletedUser.deletedCount === 0) {
             return ResponseHandler(res, 404, "User Not Found");
         }
