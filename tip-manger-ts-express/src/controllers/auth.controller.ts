@@ -38,7 +38,7 @@ export const signIn = async (req: Request, res: Response) => {
             return ResponseHandler(res, 404, "User Not Found");
         }
 
-        const comparePassword = await bcrypt.compare(password, String(emailExist.password));
+        const comparePassword = await bcrypt.compare(password, emailExist.password as string);
         if (!comparePassword) {
             return ResponseHandler(res, 401, "Invalid Credential");
         }
