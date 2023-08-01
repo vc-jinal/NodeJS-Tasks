@@ -37,3 +37,8 @@ export const addProduct = async (req, res) => {
 
     return res.send({ statusCode: 200, message: "Product added successfully" });
 };
+
+// // to render add Product Template
+// export const addProductButton = (req, res) => {
+//     return res.render("addProduct");
+// };

@@ -1,6 +1,8 @@
 import { Router } from "express";
 const locationRoute = Router();
 import {
+    addProductButton,
+    addLocationButton,
     getLocationById,
     addLocation,
     updateLocation,
@@ -9,7 +11,13 @@ import {
 } from "../controllers/location.controller.js";
 
 // add location
-locationRoute.post("/", addLocation);
+locationRoute.post("/submit", addLocation);
+
+// to render add location template
+locationRoute.get("/addLocation/:id", addLocationButton);
+
+// add Product button
+locationRoute.get("/addProduct", addProductButton);
 
 // get parent location
 locationRoute.get("/", getParentLocation);

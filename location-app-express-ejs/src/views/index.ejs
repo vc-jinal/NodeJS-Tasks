@@ -10,9 +10,10 @@
             <legend>
                 <h1>Location-App</h1>
             </legend>
-            <input type="button" id="location" name="location" value="Add location" />
-            <input type="button" id="product" name="product" value="Add product" />
-            </form> -->
+            <a href="http://localhost:3000/api/location/addLocation/<%= findTopParent._id %>"
+                ><button>Add location</button></a
+            >
+            <a href="http://localhost:3000/api/location/addProduct"><button>Add product</button></a>
             <br />
             <table id="table" border="2">
                 <tr>
@@ -33,9 +34,18 @@
                             ><%= location.locationName %></a
                         >
                     </td>
-                    <td><input type="button" id="Edit" name="Edit" value="Edit" /></td>
-                    <td><input type="button" id="Delete" name="Delete" value="Delete" /></td>
-                    <td></td>
+                    <!-- <td><input type="button" id="Edit" name="Edit" value="Edit" /></td>
+                    <td><input type="button" id="Delete" name="Delete" value="Delete" /></td> -->
+                    <td>
+                        <a href="http://localhost:3000/api/location/<%= location._id %>?_method=PUT">
+                            <button>Edit</button></a
+                        >
+                    </td>
+                    <td>
+                        <a href="http://localhost:3000/api/location/<%= location._id %>?_method=DELETE">
+                            <button>Delete</button></a
+                        >
+                    </td>
                     <td><%= location.childProductName %></td>
                 </tr>
                 <% }) %>

@@ -8,10 +8,14 @@
     <body>
         <fieldset>
             <legend>
-                <h1>Location-App</h1>
+                <h1>Location-App <%=localtionParentId%></h1>
             </legend>
-            <input type="button" id="location" name="location" value="Add location" />
-            <input type="button" id="product" name="product" value="Add product" />
+            <a href="http://localhost:3000/api/location/addLocation/<%=localtionParentId%>"
+                ><button>Add location</button></a
+            >
+            <a href="http://localhost:3000/api/location/addProduct/<%=localtionParentId%>"
+                ><button>Add product</button></a
+            >
             <br />
             <table id="table" border="2">
                 <tr>
@@ -25,7 +29,10 @@
                 <% locationParent.forEach(location => { %>
                 <tr>
                     <td>
-                        <a href="#" class="parent-link" data-location-id="<%= location._id %>"
+                        <a
+                            href="http://localhost:3000/api/location/<%= location._id %>"
+                            class="parent-link"
+                            data-location-id="<%= location._id %>"
                             ><%= location.locationName %></a
                         >
                     </td>
