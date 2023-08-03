@@ -8,7 +8,7 @@
     <body>
         <fieldset>
             <legend>
-                <h1>Location-App <%=localtionParentId%></h1>
+                <!-- <h1>Location-App <%=localtionParentId%></h1> -->
             </legend>
             <a href="http://localhost:3000/api/location/addLocation/<%=localtionParentId%>"
                 ><button>Add location</button></a
@@ -37,9 +37,17 @@
                         >
                     </td>
                     <td></td>
-                    <td><input type="button" id="Edit" name="Edit" value="Edit" /></td>
-                    <td><input type="button" id="Delete" name="Delete" value="Delete" /></td>
-                    <td></td>
+                    <td>
+                        <a href="http://localhost:3000/api/location/editLocation/<%= location._id %>"
+                            ><button>Edit</button></a
+                        >
+                    </td>
+                    <td>
+                        <a href="http://localhost:3000/api/location/delete/<%= location._id %>?_method=delete">
+                            <button>Delete</button>
+                        </a>
+                    </td>
+                    <td><%= location.productName %></td>
                     <td><%= location.childProductName %></td>
                 </tr>
                 <% }) %>

@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import Location from "../models/location.model.js";
 
 export const getParentLocation = async (req, res) => {
@@ -12,29 +11,39 @@ export const getLocationById = async (req, res) => {
         { parentId: locationId },
         { locationName: 1, parentId: 1, productName: 1, childProductName: 1 }
     );
-
     res.render("home.ejs", {
         locationParent: locationParent,
-        localtionParentId: new Types.ObjectId(locationParent._id),
+        localtionParentId: locationId,
     });
 };
 
 // to render add location template
 export const addLocationButton = async (req, res) => {
-    const locationIdExist = await Location.findOne({ _id: req.params.id });
-    console.log("locationIdExist", locationIdExist);
-    res.render("addLocation.ejs", { parentId: req.params.id });
+    const id = req.params.id;
+    const locationIdExist = await Location.findOne({ parentId: id });
+    // res.render("addLocation.ejs", { parentId:  new Types.ObjectId(id) });
+    res.render("addLocation.ejs", { parentId: id });
+};
+
+// reder edit location button
+export const editLocationButton = async (req, res) => {
+    const id = req.params.id;
+    const locationIdExist = await Location.findOne({ _id: id });
+    res.render("editLocation.ejs", { id: locationIdExist._id });
+    // res.render("editLocation.ejs", { id: location._id, locationName: location.locationName });
 };
 
 // to render add Product Template
-export const addProductButton = (req, res) => {
-    return res.render("addProduct");
+export const addProductButton = async (req, res) => {
+    const id = req.params.id;
+    const locationIdExist = await Location.findOne({ _id: id });
+    res.render("addProduct.ejs", { id: locationIdExist._id });
 };
 
 // add location details
 export const addLocation = async (req, res) => {
-    const { locationName, productName, childProductName, parentId } = req.body;
-    console.log("=----------------------------------------------", req.body);
+    const parentId = req.params.id;
+    const { locationName, productName, childProductName } = req.body;
     let placeIndex;
     if (parentId === "") {
         const findTopParent = await Location.find({ parentId: null });
@@ -49,17 +58,14 @@ export const addLocation = async (req, res) => {
         };
         const addNewLocation = await Location.create(newLocation);
         // return res.send({ statusCode: 200, message: "location added successfully", location: addNewLocation });
-        res.redirect("home", { addNewLocation });
+        res.redirect("/submit", { parentId: newLocation.parentId });
     } else {
-        const findParentId = await Location.findOne({ _id: req.body.parentId });
-
-        const lastChildLocation = await Location.findOne({ parentId: req.body.parentId }).sort({ placeIndex: -1 });
-
+        const findParentId = await Location.findOne({ _id: req.params.id });
+        const lastChildLocation = await Location.findOne({ parentId: req.params.id }).sort({ placeIndex: -1 });
         const setIndex =
             lastChildLocation === null
                 ? findParentId.placeIndex.concat(".") + 1
                 : findParentId.placeIndex.concat(".", parseInt(lastChildLocation.placeIndex.split(".").pop()) + 1);
-
         const newLocation = {
             locationName: locationName,
             parentId: parentId,
@@ -68,7 +74,9 @@ export const addLocation = async (req, res) => {
             placeIndex: setIndex,
         };
         const addNewLocation = await Location.create(newLocation);
-        return res.send({ statusCode: 200, message: "location added successfully", location: addNewLocation });
+        // return res.send({ statusCode: 200, message: "location added successfully", location: addNewLocation });
+        // res.render("/submit", { parentId: parentId });
+        res.render("/", { parentId: newLocation.parentId });
     }
 };
 
@@ -85,11 +93,13 @@ export const updateLocation = async (req, res) => {
         return res.send({ statusCode: 400, message: "Location Name is already exist" });
     }
     const updateLocationName = await Location.updateOne({ _id: locationId }, { locationName: locationName });
-    return res.send({
-        statusCode: 200,
-        message: "Location Updated Successfully",
-        updateLocationName: updateLocationName,
-    });
+    // return res.send({
+    //     statusCode: 200,
+    //     message: "Location Updated Successfully",
+    //     updateLocationName: updateLocationName,
+    // });
+    // res.render("/", { location: updateLocationName._id });
+    res.render("home.ejs");
 };
 
 // delete
@@ -112,11 +122,11 @@ const deleteLocationAndChildren = async (locationId) => {
 export const deleteLocation = async (req, res) => {
     const locationId = req.params.id;
     await deleteLocationAndChildren(locationId);
-    return res.send({ statusCode: 200, message: "Location and their child location is deleted successfully" });
+    // return res.send({ statusCode: 200, message: "Location and their child location is deleted successfully" });
+    res.render("home.ejs", { locationId: req.params.id });
 };
 
 export const getAllDetails = async (req, res) => {
     const allLocation = await Location.find({});
-    console.log(allLocation);
     res.render("home", { allLocation });
 };

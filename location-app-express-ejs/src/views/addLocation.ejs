@@ -6,9 +6,10 @@
         <title>Document</title>
     </head>
     <body>
-        <form action="http://localhost:3000/api/location/submit" method="POST">
+        <form action="http://localhost:3000/api/location/<%=parentId%>" method="post">
             <label for="locationName">Location Name:</label>
-            <%=parentId%>
+            <!-- <input type="text" id="parentId" name="" value="<%=parentId%>" /> -->
+
             <input type="text" id="locationName" name="locationName" />
             <button type="submit">Add Location</button>
         </form>

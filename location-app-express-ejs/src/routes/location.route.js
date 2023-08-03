@@ -8,27 +8,31 @@ import {
     updateLocation,
     deleteLocation,
     getParentLocation,
+    editLocationButton,
 } from "../controllers/location.controller.js";
 
-// add location
-locationRoute.post("/submit", addLocation);
+// update location name
+locationRoute.put("/edit/:id", updateLocation);
+
+// get location by id
+locationRoute.get("/:id", getLocationById);
+
+// to render edit location template
+locationRoute.get("/editLocation/:id", editLocationButton);
 
 // to render add location template
 locationRoute.get("/addLocation/:id", addLocationButton);
 
 // add Product button
-locationRoute.get("/addProduct", addProductButton);
+locationRoute.get("/addProduct/:id", addProductButton);
+
+// delete location
+locationRoute.delete("/delete/:id", deleteLocation);
+
+// add location
+locationRoute.post("/:id", addLocation);
 
 // get parent location
 locationRoute.get("/", getParentLocation);
-
-// get location by id
-locationRoute.get("/:id", getLocationById);
-
-// update location name
-locationRoute.put("/:id", updateLocation);
-
-// delete location
-locationRoute.delete("/:id", deleteLocation);
 
 export default locationRoute;

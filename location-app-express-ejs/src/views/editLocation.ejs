@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <!-- <form action="http://localhost:3000/api/location/editData/by/user/<%= id %>" method="PUT"> -->
+        <form method="POST" action="http://localhost:3000/api/location/edit/<%=id%>?_method=PUT">
+            <input type="hidden" name="_method" value="PUT" />
+            <label for="locationName">Location Name:</label>
+            <input type="text" id="id" name="" value="<%=id%>" />
+
+            <input type="text" id="locationName" name="locationName" />
+            <button type="submit">Update Location Name</button>
+        </form>
+    </body>
+</html>
