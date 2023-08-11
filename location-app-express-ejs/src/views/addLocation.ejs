@@ -6,12 +6,22 @@
         <title>Document</title>
     </head>
     <body>
+        <h1>Conditional Rendering with EJS</h1>
+
+        <% if (parentId !== null) { %>
         <form action="http://localhost:3000/api/location/<%=parentId%>" method="post">
             <label for="locationName">Location Name:</label>
-            <!-- <input type="text" id="parentId" name="" value="<%=parentId%>" /> -->
 
             <input type="text" id="locationName" name="locationName" />
             <button type="submit">Add Location</button>
         </form>
+        <% } else { %>
+        <form action="http://localhost:3000/api/location/parentLocation" method="post">
+            <label for="locationName">Location Name:</label>
+
+            <input type="text" id="locationName" name="locationName" />
+            <button type="submit">Add Location</button>
+        </form>
+        <% } %>
     </body>
 </html>

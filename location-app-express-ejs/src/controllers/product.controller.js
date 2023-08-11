@@ -2,7 +2,6 @@ import Location from "../models/location.model.js";
 
 // add product to location and update parent locations' childProductName
 export const addProduct = async (req, res) => {
-    console.log("ooooooooooooooooooooooooooooooooo");
     const locationId = req.params.id;
     const productName = req.body.productName;
     const location = await Location.findOne({ _id: locationId });
@@ -35,12 +34,5 @@ export const addProduct = async (req, res) => {
 
     const updateChildProduct = await updateParentChildProduct(location.parentId);
     console.log("updateChildProduct", updateChildProduct);
-    res.render("home");
-
-    // return res.send({ statusCode: 200, message: "Product added successfully" });
+    return res.send({ statusCode: 200, message: "Product added successfully" });
 };
-
-// // to render add Product Template
-// export const addProductButton = (req, res) => {
-//     return res.render("addProduct");
-// };

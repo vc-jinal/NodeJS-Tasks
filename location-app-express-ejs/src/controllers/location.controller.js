@@ -2,27 +2,33 @@ import Location from "../models/location.model.js";
 
 export const getParentLocation = async (req, res) => {
     const findTopParent = await Location.find({ parentId: null });
-    res.render("index", { findTopParent });
+    res.render("index.ejs", { findTopParent: findTopParent });
 };
 
 export const getLocationById = async (req, res) => {
-    const locationId = req.params.id;
+    const locationId = req.params.id || null;
     const locationParent = await Location.find(
         { parentId: locationId },
         { locationName: 1, parentId: 1, productName: 1, childProductName: 1 }
     );
     res.render("home.ejs", {
-        locationParent: locationParent,
-        localtionParentId: locationId,
+        locationParent: locationParent || null,
+        localtionParentId: locationId || null,
     });
 };
 
 // to render add location template
-export const addLocationButton = async (req, res) => {
-    const id = req.params.id;
+export const addParentbutton = async (req, res) => {
+    const id = null;
     const locationIdExist = await Location.findOne({ parentId: id });
-    // res.render("addLocation.ejs", { parentId:  new Types.ObjectId(id) });
-    res.render("addLocation.ejs", { parentId: id });
+    res.render("addLocation.ejs", { parentId: null });
+};
+
+// to render add location template
+export const addLocationButton = async (req, res) => {
+    const id = req.params.id || null;
+    const locationIdExist = await Location.findOne({ parentId: id });
+    res.render("addLocation.ejs", { parentId: id || null });
 };
 
 // reder edit location button
@@ -30,7 +36,13 @@ export const editLocationButton = async (req, res) => {
     const id = req.params.id;
     const locationIdExist = await Location.findOne({ _id: id });
     res.render("editLocation.ejs", { id: locationIdExist._id });
-    // res.render("editLocation.ejs", { id: location._id, locationName: location.locationName });
+};
+
+// render delete location button
+export const deleteLocationButton = async (req, res) => {
+    const id = req.params.id;
+    const locationIdExist = await Location.findOne({ _id: id });
+    res.render("deleteLocation.ejs", { id: locationIdExist._id });
 };
 
 // to render add Product Template
@@ -42,42 +54,44 @@ export const addProductButton = async (req, res) => {
 
 // add location details
 export const addLocation = async (req, res) => {
-    const parentId = req.params.id;
+    const parentId = req.params.id || null;
+    console.log("parentId", parentId);
     const { locationName, productName, childProductName } = req.body;
     let placeIndex;
-    if (parentId === "") {
-        const findTopParent = await Location.find({ parentId: null });
-        const givePlaceIndex = findTopParent.length > 0 ? findTopParent.length + 1 : 1;
-        placeIndex = givePlaceIndex;
+    const findParentId = await Location.findOne({ _id: req.params.id });
+    const lastChildLocation = await Location.findOne({ parentId: req.params.id }).sort({ placeIndex: -1 });
+    const setIndex =
+        lastChildLocation === null
+            ? findParentId.placeIndex.concat(".") + 1
+            : findParentId.placeIndex.concat(".", parseInt(lastChildLocation.placeIndex.split(".").pop()) + 1);
+    const newLocation = {
+        locationName: locationName,
+        parentId: parentId,
+        productName: productName,
+        childProductName: childProductName,
+        placeIndex: setIndex,
+    };
+    const addNewLocation = await Location.create(newLocation);
+    return res.send({ statusCode: 200, message: "location added successfully", location: addNewLocation });
+};
 
-        const newLocation = {
-            locationName: locationName,
-            productName: productName,
-            childProductName: childProductName,
-            placeIndex: placeIndex,
-        };
-        const addNewLocation = await Location.create(newLocation);
-        // return res.send({ statusCode: 200, message: "location added successfully", location: addNewLocation });
-        res.redirect("/submit", { parentId: newLocation.parentId });
-    } else {
-        const findParentId = await Location.findOne({ _id: req.params.id });
-        const lastChildLocation = await Location.findOne({ parentId: req.params.id }).sort({ placeIndex: -1 });
-        const setIndex =
-            lastChildLocation === null
-                ? findParentId.placeIndex.concat(".") + 1
-                : findParentId.placeIndex.concat(".", parseInt(lastChildLocation.placeIndex.split(".").pop()) + 1);
-        const newLocation = {
-            locationName: locationName,
-            parentId: parentId,
-            productName: productName,
-            childProductName: childProductName,
-            placeIndex: setIndex,
-        };
-        const addNewLocation = await Location.create(newLocation);
-        // return res.send({ statusCode: 200, message: "location added successfully", location: addNewLocation });
-        // res.render("/submit", { parentId: parentId });
-        res.render("/", { parentId: newLocation.parentId });
-    }
+// add parent location details
+export const addParentLocation = async (req, res) => {
+    const { locationName, productName, childProductName } = req.body;
+    let placeIndex;
+
+    const findTopParent = await Location.find({ parentId: null });
+    const givePlaceIndex = findTopParent.length > 0 ? findTopParent.length + 1 : 1;
+    placeIndex = givePlaceIndex;
+
+    const newLocation = {
+        locationName: locationName,
+        productName: productName,
+        childProductName: childProductName,
+        placeIndex: placeIndex,
+    };
+    const addNewLocation = await Location.create(newLocation);
+    return res.send({ statusCode: 200, message: "location added successfully", location: addNewLocation });
 };
 
 // update location name
@@ -93,13 +107,11 @@ export const updateLocation = async (req, res) => {
         return res.send({ statusCode: 400, message: "Location Name is already exist" });
     }
     const updateLocationName = await Location.updateOne({ _id: locationId }, { locationName: locationName });
-    // return res.send({
-    //     statusCode: 200,
-    //     message: "Location Updated Successfully",
-    //     updateLocationName: updateLocationName,
-    // });
-    // res.render("/", { location: updateLocationName._id });
-    res.render("home.ejs");
+    return res.send({
+        statusCode: 200,
+        message: "Location Updated Successfully",
+        updateLocationName: updateLocationName,
+    });
 };
 
 // delete
@@ -122,8 +134,7 @@ const deleteLocationAndChildren = async (locationId) => {
 export const deleteLocation = async (req, res) => {
     const locationId = req.params.id;
     await deleteLocationAndChildren(locationId);
-    // return res.send({ statusCode: 200, message: "Location and their child location is deleted successfully" });
-    res.render("home.ejs", { locationId: req.params.id });
+    return res.send({ statusCode: 200, message: "Location and their child location is deleted successfully" });
 };
 
 export const getAllDetails = async (req, res) => {

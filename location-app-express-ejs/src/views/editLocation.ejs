@@ -6,8 +6,7 @@
         <title>Document</title>
     </head>
     <body>
-        <!-- <form action="http://localhost:3000/api/location/editData/by/user/<%= id %>" method="PUT"> -->
-        <form method="POST" action="http://localhost:3000/api/location/edit/<%=id%>?_method=PUT">
+        <form method="POST" action="http://localhost:3000/api/location/edit/<%=id%>">
             <input type="hidden" name="_method" value="PUT" />
             <label for="locationName">Location Name:</label>
             <input type="text" id="id" name="" value="<%=id%>" />
